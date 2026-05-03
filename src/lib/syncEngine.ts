@@ -8,7 +8,17 @@ class SyncEngine {
   private offsetHistory: { offset: number; rtt: number }[] = [];
 
   constructor() {
-    this.socket = io();
+    // Use VITE_API_URL if provided (for production), otherwise use default
+    const socketUrl = import.meta.env.VITE_API_URL || '';
+    
+    this.socket = io(socketUrl, {
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      reconnectionAttempts: 5,
+      transports: ['websocket', 'polling']
+    });
+    
     this.startSync();
   }
 

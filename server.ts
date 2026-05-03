@@ -21,20 +21,51 @@ if (!fs.existsSync(uploadsDir)) {
 
 async function startServer() {
   const app = express();
-  app.use(cors());
+  const PORT = parseInt(process.env.PORT || '3000', 10);
+  
+  // Determine allowed origins based on environment
+  const allowedOrigins = [
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:5173'
+  ];
+  
+  // Add production domain if provided
+  if (process.env.APP_URL) {
+    allowedOrigins.push(process.env.APP_URL);
+  }
+  
+  // Add Vercel domains
+  if (process.env.VERCEL_URL) {
+    allowedOrigins.push(`https://${process.env.VERCEL_URL}`);
+  }
+  
+  app.use(cors({
+    origin: allowedOrigins,
+    methods: ['GET', 'POST'],
+    credentials: true
+  }));
+  
   const httpServer = createServer(app);
   const io = new Server(httpServer, {
+    transports: ['websocket', 'polling'],
     cors: {
-      origin: "*",
-      methods: ["GET", "POST"]
+      origin: allowedOrigins,
+      methods: ["GET", "POST"],
+      credentials: true
     }
   });
-
-  const PORT = 3000;
 
   // Middleware
   app.use(express.json());
   app.use("/uploads", express.static(uploadsDir));
+
+  // Serve Vite-built frontend in production
+  const distPath = path.join(__dirname, "dist");
+  if (fs.existsSync(distPath)) {
+    app.use(express.static(distPath));
+  }
 
   // Memory store for parties
   // In a real app, this would be Redis
