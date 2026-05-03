@@ -1464,9 +1464,9 @@ const LibraryView = ({
              <h2 className="text-4xl font-display font-bold">Add Music</h2>
            </div>
            
-           <div className="flex flex-col w-full md:w-auto gap-2">
-             <div className="flex flex-wrap gap-4 w-full md:w-auto">
-                <form onSubmit={handleSearchClick} className="flex-1 min-w-[300px] relative">
+           <div className="flex flex-col w-full gap-2">
+             <div className="flex flex-col sm:flex-row gap-4 w-full">
+                <form onSubmit={handleSearchClick} className="flex-1 min-w-[250px] relative">
                   <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40">
                     {(isSearching || isSuggesting) ? <Loader2 size={20} className="animate-spin text-party-violet" /> : <Search size={20} />}
                   </div>
@@ -1568,40 +1568,40 @@ const LibraryView = ({
            </div>
         </div>
 
-        <div className="flex flex-wrap gap-4 mb-8 p-4 glass rounded-2xl border border-white/10">
-          <div className="flex-1 min-w-[150px]">
-             <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold mb-1 block">Filter Artist</label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 p-4 glass rounded-2xl border border-white/10">
+          <div className="flex-1">
+             <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold mb-2 block">Filter Artist</label>
              <input 
                type="text" 
                placeholder="Artist name..." 
-               className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm focus:border-party-violet outline-none"
+               className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm focus:border-party-violet outline-none transition-colors"
                value={filterArtist}
                onChange={e => setFilterArtist(e.target.value)}
              />
           </div>
-          <div className="flex-1 min-w-[150px]">
-             <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold mb-1 block">Filter Album</label>
+          <div className="flex-1">
+             <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold mb-2 block">Filter Album</label>
              <input 
                type="text" 
                placeholder="Album name..." 
-               className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm focus:border-party-violet outline-none"
+               className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm focus:border-party-violet outline-none transition-colors"
                value={filterAlbum}
                onChange={e => setFilterAlbum(e.target.value)}
              />
           </div>
-          <div className="flex-1 min-w-[150px]">
-             <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold mb-1 block">Filter Genre</label>
+          <div className="flex-1">
+             <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold mb-2 block">Filter Genre</label>
              <input 
                type="text" 
                placeholder="Genre..." 
-               className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm focus:border-party-violet outline-none"
+               className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm focus:border-party-violet outline-none transition-colors"
                value={filterGenre}
                onChange={e => setFilterGenre(e.target.value)}
              />
           </div>
           <button 
             onClick={() => { setFilterArtist(""); setFilterAlbum(""); setFilterGenre(""); }}
-            className="self-end px-4 py-2 text-sm font-bold text-white/40 hover:text-white transition-colors"
+            className="col-span-1 sm:col-span-2 lg:col-span-1 px-4 py-2 text-sm font-bold text-white/40 hover:text-white hover:bg-white/5 transition-colors rounded-lg self-end lg:self-center"
           >
             Reset
           </button>
@@ -1621,7 +1621,7 @@ const LibraryView = ({
             <VirtuosoGrid
               style={{ height: '600px' }}
               data={filteredLibrary}
-              listClassName="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 pb-24 pr-2"
+              listClassName="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 pb-24 pr-2"
               itemContent={(index, track) => (
                 <motion.div
                   key={`${track.id}-${index}`}
@@ -1639,24 +1639,27 @@ const LibraryView = ({
                   </div>
                   <h4 className="font-bold truncate text-sm flex-grow">{track.name}</h4>
                   <p className="text-xs text-white/40 truncate mb-4">{track.artist}</p>
-                  <div className="flex gap-2">
+                  <div className="grid grid-cols-3 gap-2">
                     <button
                       onClick={() => onPlayTrackNow(track)}
-                      className="flex-1 py-2 px-3 bg-party-violet/20 hover:bg-party-violet/40 text-xs font-bold text-party-violet rounded-lg transition-colors flex items-center justify-center gap-1"
+                      className="py-2 px-2 bg-party-violet/20 hover:bg-party-violet/40 text-xs font-bold text-party-violet rounded-lg transition-colors flex items-center justify-center gap-1"
+                      title="Play now"
                     >
-                      <Play size={12} /> Play
+                      <Play size={14} />
                     </button>
                     <button
                       onClick={() => onAddToQueue(track)}
-                      className="flex-1 py-2 px-3 bg-white/10 hover:bg-white/20 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1"
+                      className="py-2 px-2 bg-white/10 hover:bg-white/20 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1"
+                      title="Add to queue"
                     >
-                      <Plus size={12} /> Queue
+                      <Plus size={14} />
                     </button>
                     <button
                       onClick={() => onRemoveTrack(track)}
-                      className="flex-1 py-2 px-3 bg-red-500/20 hover:bg-red-500/40 text-xs font-bold text-red-400 rounded-lg transition-colors flex items-center justify-center gap-1"
+                      className="py-2 px-2 bg-red-500/20 hover:bg-red-500/40 text-red-400 rounded-lg transition-colors flex items-center justify-center gap-1"
+                      title="Remove from library"
                     >
-                      <Trash2 size={12} /> Remove
+                      <Trash2 size={14} />
                     </button>
                   </div>
                 </motion.div>
