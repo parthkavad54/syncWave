@@ -46,8 +46,17 @@ In traditional party settings, one person usually controls the aux cord, or gues
    Create a `.env` file in the root directory (using `.env.example` as a template):
    ```env
    GEMINI_API_KEY=your_gemini_api_key_here
+   YOUTUBE_API_KEY=your_youtube_api_key_here
+   FIREBASE_PROJECT_ID=your-firebase-project-id
+   FIREBASE_STORAGE_BUCKET=your-project.firebasestorage.app
    ```
-   *Note: Ensure your `firebase-applet-config.json` is present with your Firebase credentials.*
+
+3. **Firebase Configuration**:
+   Copy `firebase-applet-config.example.json` to `firebase-applet-config.json` and fill in your Firebase project details from [Firebase Console](https://console.firebase.google.com):
+   ```bash
+   cp firebase-applet-config.example.json firebase-applet-config.json
+   ```
+   ⚠️ **Important**: Never commit `firebase-applet-config.json` to version control. It contains sensitive credentials and is already in `.gitignore`. Treat it like a password.
 
 3. **Database Rules**:
    Deploy the Firestore security rules provided in `firestore.rules` to ensure the party system is secure.

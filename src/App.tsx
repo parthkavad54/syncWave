@@ -172,10 +172,10 @@ const VibeSelector = ({ currentVibe, onVibeChange, isHost }: {
       </div>
       <div className="grid grid-cols-5 gap-3">
         <button
-          onClick={() => isHost && onVibeChange(null)}
+          onClick={() => onVibeChange(null)}
           className={`aspect-square flex flex-col items-center justify-center rounded-2xl border transition-all ${
             !currentVibe ? 'border-party-violet bg-party-violet/20 shadow-lg shadow-party-violet/10' : 'border-white/5 bg-white/5 grayscale opacity-40 hover:opacity-100 hover:grayscale-0'
-          } ${!isHost && 'cursor-default'}`}
+          }`}
         >
           <div className="text-[8px] font-black uppercase tracking-widest">Off</div>
         </button>
@@ -184,12 +184,12 @@ const VibeSelector = ({ currentVibe, onVibeChange, isHost }: {
           return (
             <button
               key={p.id}
-              onClick={() => isHost && onVibeChange({ id: p.id, volume: 0.3 })}
+              onClick={() => onVibeChange({ id: p.id, volume: 0.3 })}
               className={`aspect-square flex flex-col items-center justify-center rounded-2xl border transition-all ${
                 currentVibe?.id === p.id 
                   ? 'border-party-cyan bg-party-cyan/20 shadow-lg shadow-party-cyan/10' 
                   : 'border-white/5 bg-white/5 grayscale opacity-40 hover:opacity-100 hover:grayscale-0'
-              } ${!isHost && 'cursor-default'}`}
+              }`}
             >
               <Icon size={18} className={currentVibe?.id === p.id ? "text-party-cyan" : "text-white"} />
               <span className="text-[7px] font-black mt-2 uppercase tracking-tight">{p.name}</span>
@@ -345,6 +345,15 @@ const YouTubePlayer = ({
   onEnd: () => void
 }) => {
   const playerRef = useRef<any>(null);
+  const playerOptions = useMemo(() => ({
+    playerVars: {
+      controls: 0,
+      disablekb: 1,
+      modestbranding: 1,
+      rel: 0,
+      playsinline: 1
+    },
+  }), []);
 
   useEffect(() => {
     if (playerRef.current) {
@@ -369,24 +378,60 @@ const YouTubePlayer = ({
     <div className="fixed -left-[1000px] -top-[1000px] w-[1px] h-[1px] opacity-0 pointer-events-none overflow-hidden">
       <YouTube
         videoId={videoId}
+        opts={playerOptions}
         onReady={(e) => {
           playerRef.current = e.target;
           onReady(e.target);
         }}
         onEnd={onEnd}
         onError={(e) => console.error("YouTube Player Error:", e.data)}
-        opts={{
-          playerVars: {
-            autoplay: 1,
-            controls: 0,
-            disablekb: 1,
-            modestbranding: 1,
-            origin: window.location.origin
-          },
-        }}
       />
     </div>
   );
+};
+
+const formatTime = (seconds: number) => {
+  const safeSeconds = Math.max(0, seconds || 0);
+  const minutes = Math.floor(safeSeconds / 60);
+  const remainingSeconds = Math.floor(safeSeconds % 60);
+  return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+};
+
+const getProgressPercent = (currentTime: number, duration: number) => {
+  if (!duration || duration <= 0) return 0;
+  return Math.min(100, Math.max(0, (currentTime / duration) * 100));
+};
+
+const PlaybackProgress = ({ 
+  currentTime, 
+  duration, 
+  rightLabel 
+}: { 
+  currentTime: number; 
+  duration: number; 
+  rightLabel?: string; 
+}) => {
+  const progress = getProgressPercent(currentTime, duration);
+  return (
+    <div className="w-full space-y-2">
+      <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.2em] text-white/40 font-mono">
+        <span>{formatTime(currentTime)} / {formatTime(duration)}</span>
+        <span>{rightLabel || `${Math.round(progress)}% complete`}</span>
+      </div>
+      <div className="h-2 rounded-full bg-white/10 overflow-hidden border border-white/5">
+        <div className="h-full rounded-full bg-gradient-to-r from-party-violet via-party-cyan to-white/90 transition-[width] duration-300 ease-linear" style={{ width: `${progress}%` }} />
+      </div>
+    </div>
+  );
+};
+
+const getPlaybackSeconds = (playback: PlaybackState, isPaused: boolean) => {
+  if (!playback.playing || isPaused) {
+    return playback.position / 1000;
+  }
+
+  const elapsed = Math.max(0, syncEngine.getCorrectedTime() - playback.timestamp);
+  return (playback.position + elapsed) / 1000;
 };
 
 const NamePrompt = ({ onComplete }: { onComplete: (name: string) => void }) => {
@@ -719,10 +764,12 @@ const JoinView = ({ onBack, onJoin }: { onBack: () => void, onJoin: (code: strin
 
 const SortableTrackItem = ({ 
   track, 
+  isCurrent,
   onPlayTrack, 
   onRemoveFromQueue,
 }: { 
   track: Track, 
+  isCurrent: boolean,
   onPlayTrack: (t: Track) => void,
   onRemoveFromQueue: (id: string) => void,
 }) => {
@@ -748,7 +795,7 @@ const SortableTrackItem = ({
       style={style}
       className={`flex flex-col mb-2 group ${isDragging ? 'shadow-2xl shadow-party-violet/20' : ''}`}
     >
-      <div className={`flex items-center gap-3 p-3 rounded-2xl transition-all border ${isDragging ? 'bg-white/20 border-party-violet/40' : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10'} cursor-default`}>
+      <div className={`flex items-center gap-3 p-3 rounded-2xl transition-all border ${isCurrent ? 'bg-party-violet/10 border-party-violet/40' : isDragging ? 'bg-white/20 border-party-violet/40' : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10'} cursor-default`}>
         <div 
           {...attributes} 
           {...listeners}
@@ -763,6 +810,9 @@ const SortableTrackItem = ({
           {track.coverArt ? <img src={track.coverArt} className="w-full h-full object-cover" /> : <Music size={16} />}
         </div>
         <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onPlayTrack(track)}>
+          {isCurrent && (
+            <div className="mb-1 text-[9px] font-black uppercase tracking-[0.25em] text-party-violet">Now Playing</div>
+          )}
           <h4 className="font-bold truncate text-sm">{track.name}</h4>
           <p className="text-xs text-white/40 truncate">{track.artist}</p>
         </div>
@@ -905,14 +955,15 @@ const HostDashboard = ({
             onChange={onSeek}
             className="w-full h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer accent-party-violet"
           />
-          <div 
-            className="absolute top-0 left-4 right-4 h-1.5 bg-gradient-to-r from-party-violet to-party-cyan rounded-full pointer-events-none"
-            style={{ width: `calc(${(currentTime / (duration || 1)) * 100}% - 32px)` }}
-          />
+          <div className="absolute top-0 left-4 right-4 h-1.5 bg-white/10 rounded-full pointer-events-none overflow-hidden">
+            <div 
+              className="h-full bg-gradient-to-r from-party-violet to-party-cyan rounded-full transition-[width] duration-300 ease-linear"
+              style={{ width: `${getProgressPercent(currentTime, duration)}%` }}
+            />
+          </div>
         </div>
-        <div className="flex justify-between w-full text-xs text-white/40 font-mono px-4">
-          <span>{Math.floor(currentTime / 60)}:{(currentTime % 60).toFixed(0).padStart(2, "0")}</span>
-          <span>{Math.floor(duration / 60)}:{(duration % 60).toFixed(0).padStart(2, "0")}</span>
+        <div className="px-4 w-full">
+          <PlaybackProgress currentTime={currentTime} duration={duration} />
         </div>
       </div>
       <VibeSelector 
@@ -964,17 +1015,14 @@ const HostDashboard = ({
                       <p className="text-xs text-white/40 truncate">{party.currentTrack.artist}</p>
                     </div>
                     <div className="text-right flex flex-col items-end">
-                      <span className="text-[10px] font-mono text-white/40">
-                        {Math.floor(currentTime / 60)}:{(currentTime % 60).toFixed(0).padStart(2, "0")}
-                      </span>
+                          <span className="text-[10px] font-mono text-white/40">{formatTime(currentTime)} / {formatTime(duration)}</span>
                     </div>
                   </div>
                   <div className="absolute bottom-0 left-0 h-1.5 bg-white/5 w-full">
-                     <motion.div 
-                       className="h-full bg-gradient-to-r from-party-violet to-party-cyan"
-                       animate={{ width: `${(currentTime / (duration || 1)) * 100}%` }}
-                       transition={{ duration: 0.5, ease: "linear" }}
-                     />
+                         <div 
+                           className="h-full bg-gradient-to-r from-party-violet to-party-cyan transition-[width] duration-300 ease-linear"
+                           style={{ width: `${getProgressPercent(currentTime, duration)}%` }}
+                         />
                   </div>
                 </motion.div>
               )}
@@ -1017,6 +1065,7 @@ const HostDashboard = ({
                         <SortableTrackItem 
                           key={track.id}
                           track={track}
+                          isCurrent={party?.currentTrack?.id === track.id}
                           onPlayTrack={onPlayTrack}
                           onRemoveFromQueue={onRemoveFromQueue}
                         />
@@ -1170,7 +1219,8 @@ const ListenerView = ({
   duration, 
   onToggleLocalPause, 
   onLeave, 
-  syncOffset 
+  syncOffset,
+  onAmbientSelect
 }: { 
   party: Party | null, 
   isLocalPaused: boolean, 
@@ -1178,7 +1228,8 @@ const ListenerView = ({
   duration: number, 
   onToggleLocalPause: () => void, 
   onLeave: () => void, 
-  syncOffset: number 
+  syncOffset: number,
+  onAmbientSelect: (vibe: { id: string, volume: number } | null) => void
 }) => {
   const me = party?.listeners.find(l => l.id === syncEngine.socket.id);
   const isMuted = me?.isMuted;
@@ -1298,7 +1349,7 @@ const ListenerView = ({
         <div className="mt-12 text-left">
           <VibeSelector 
             currentVibe={party?.ambientVibe}
-            onVibeChange={() => {}} 
+            onVibeChange={onAmbientSelect} 
             isHost={false}
           />
         </div>
@@ -1310,16 +1361,9 @@ const ListenerView = ({
                 <Plus size={14} /> Suggest a Track
               </button>
               <div className="w-full">
-                  <div className="flex justify-between text-[10px] text-white/40 font-mono mb-2 uppercase tracking-widest">
-                    <span>Synchronized {Math.floor(currentTime)}s</span>
+                  <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.2em] text-white/40 font-mono">
+                    <span>{formatTime(currentTime)} / {formatTime(duration)}</span>
                     <span>Live Session {party?.code}</span>
-                  </div>
-                  <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-                    <motion.div 
-                      className="h-full bg-party-violet"
-                      animate={{ width: `${(currentTime / (duration || 1)) * 100}%` }}
-                      transition={{ duration: 0.5, ease: "linear" }}
-                    />
                   </div>
               </div>
           </div>
@@ -1626,6 +1670,18 @@ export default function App() {
   const [toast, setToast] = useState<string | null>(null);
   const ytPlayerRef = useRef<any>(null);
 
+  const applyAmbientVibe = React.useCallback((vibe: { id: string, volume: number } | null) => {
+    if (!vibe) {
+      audioEngine.stopAllAmbient();
+      return;
+    }
+
+    const preset = AMBIENT_PRESETS.find(p => p.id === vibe.id);
+    if (preset) {
+      audioEngine.playAmbient(preset.id, preset.url, vibe.volume);
+    }
+  }, []);
+
   useEffect(() => {
     if (toast) {
       const timer = setTimeout(() => setToast(null), 3000);
@@ -1685,14 +1741,11 @@ export default function App() {
 
   useEffect(() => {
     if (party?.ambientVibe) {
-      const preset = AMBIENT_PRESETS.find(p => p.id === party.ambientVibe!.id);
-      if (preset) {
-        audioEngine.playAmbient(preset.id, preset.url, party.ambientVibe.volume);
-      }
+      applyAmbientVibe(party.ambientVibe);
     } else {
-      audioEngine.stopAllAmbient();
+      applyAmbientVibe(null);
     }
-  }, [party?.ambientVibe]);
+  }, [party?.ambientVibe, applyAmbientVibe]);
 
   const leaveSession = React.useCallback(() => {
     if (party) {
@@ -1710,10 +1763,25 @@ export default function App() {
     syncEngine.socket.emit("sync:play", { code: party.code, track_id: track.id, position_ms: 0 });
   }, [party, isHost]);
 
+  const playQueueTrack = React.useCallback((direction: "next" | "previous") => {
+    if (!party || !isHost || party.queue.length === 0) return;
+
+    const currentIndex = party.currentTrack ? party.queue.findIndex((track) => track.id === party.currentTrack?.id) : -1;
+    const targetIndex = direction === "next"
+      ? (currentIndex >= 0 ? currentIndex + 1 : 0)
+      : (currentIndex > 0 ? currentIndex - 1 : 0);
+
+    const targetTrack = party.queue[targetIndex];
+    if (targetTrack) {
+      syncEngine.socket.emit("sync:play", { code: party.code, track_id: targetTrack.id, position_ms: 0 });
+    }
+  }, [party, isHost]);
+
   const updateVibe = React.useCallback((vibe: { id: string, volume: number } | null) => {
     if (!party || !isHost) return;
+    applyAmbientVibe(vibe);
     syncEngine.socket.emit("party:update-vibe", { code: party.code, vibe });
-  }, [party, isHost]);
+  }, [party, isHost, applyAmbientVibe]);
 
   const clearQueue = React.useCallback(() => {
     if (!party || !isHost) return;
@@ -1723,21 +1791,30 @@ export default function App() {
   }, [party, isHost]);
 
   const skipForward = React.useCallback(() => {
-    if (party && party.queue.length > 0 && isHost) {
-      playTrackNow(party.queue[0]);
-    }
-  }, [party, isHost, playTrackNow]);
+    playQueueTrack("next");
+  }, [playQueueTrack]);
 
   const skipBackward = React.useCallback(() => {
-    if (isHost && party && party.currentTrack) {
+    if (!party || !isHost) return;
+
+    const currentIndex = party.currentTrack ? party.queue.findIndex((track) => track.id === party.currentTrack?.id) : -1;
+
+    if (currentTime > 3 && currentIndex <= 0) {
       syncEngine.socket.emit("sync:seek", { code: party.code, position_ms: 0 });
-      if (party.currentTrack.type === 'youtube' && ytPlayerRef.current) {
+      if (party.currentTrack?.type === 'youtube' && ytPlayerRef.current) {
         ytPlayerRef.current.seekTo(0, true);
       } else {
         audioEngine.seek(0);
       }
+      return;
     }
-  }, [isHost, party]);
+
+    const previousIndex = currentIndex > 0 ? currentIndex - 1 : 0;
+    const targetTrack = party.queue[previousIndex];
+    if (targetTrack) {
+      syncEngine.socket.emit("sync:play", { code: party.code, track_id: targetTrack.id, position_ms: 0 });
+    }
+  }, [isHost, party, currentTime]);
 
   const kickListener = React.useCallback((listenerId: string) => {
     if (!party || !isHost) return;
@@ -1823,13 +1900,7 @@ export default function App() {
       }
 
       if (party?.currentTrack) {
-        if (party.currentTrack.type === 'youtube' && ytPlayerRef.current) {
-          try {
-            setCurrentTime(ytPlayerRef.current.getCurrentTime());
-          } catch(e) {}
-        } else {
-          setCurrentTime(audioEngine.getPosition());
-        }
+        setCurrentTime(getPlaybackSeconds(party.playbackState, isLocalPaused));
       }
     }, 1000);
     return () => clearInterval(interval);
@@ -1846,38 +1917,6 @@ export default function App() {
       audioEngine.seek(pos);
     }
   };
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!party) return;
-      if (document.activeElement?.tagName === "INPUT" || document.activeElement?.tagName === "TEXTAREA") return;
-
-      if (e.code === "Space") {
-        e.preventDefault();
-        togglePlayback();
-      } else if (e.key === "j" || e.key === "ArrowLeft") {
-        if (isHost) {
-          const newPos = Math.max(0, (audioEngine.getPosition() - 10) * 1000);
-          syncEngine.socket.emit("sync:seek", { code: party.code, position_ms: newPos });
-        }
-      } else if (e.key === "l" || e.key === "ArrowRight") {
-        if (isHost) {
-          const newPos = (audioEngine.getPosition() + 10) * 1000;
-          syncEngine.socket.emit("sync:seek", { code: party.code, position_ms: newPos });
-        }
-      } else if (e.key === "n" || e.key === "k") {
-        if (isHost && party.queue.length > 0) {
-          const next = party.queue[0];
-          syncEngine.socket.emit("sync:play", { code: party.code, track_id: next.id, position_ms: 0 });
-          const newQueue = party.queue.slice(1);
-          syncEngine.socket.emit("queue:update", { code: party.code, queue: newQueue });
-        }
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [party, isHost]);
 
   useEffect(() => {
     if (!userName) return;
@@ -2011,6 +2050,21 @@ export default function App() {
     }
   };
 
+  useEffect(() => {
+    const syncPlaybackClock = () => {
+      if (!party?.currentTrack) {
+        setCurrentTime(0);
+        return;
+      }
+
+      setCurrentTime(getPlaybackSeconds(party.playbackState, isLocalPaused));
+    };
+
+    syncPlaybackClock();
+    const interval = setInterval(syncPlaybackClock, 250);
+    return () => clearInterval(interval);
+  }, [party, isLocalPaused]);
+
   const toggleLocalPause = () => {
     const newState = !isLocalPaused;
     setIsLocalPaused(newState);
@@ -2025,6 +2079,33 @@ export default function App() {
       }
     }
   };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!party) return;
+      if (document.activeElement?.tagName === "INPUT" || document.activeElement?.tagName === "TEXTAREA") return;
+
+      if (e.code === "Space" || e.key === "k") {
+        e.preventDefault();
+        if (isHost) {
+          togglePlayback();
+        } else {
+          toggleLocalPause();
+        }
+      } else if (e.key === "j" || e.key === "ArrowLeft") {
+        if (isHost) {
+          skipBackward();
+        }
+      } else if (e.key === "l" || e.key === "ArrowRight") {
+        if (isHost) {
+          skipForward();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [party, isHost, skipBackward, skipForward, toggleLocalPause, togglePlayback]);
 
   const executeSearch = async (query: string) => {
     if (!query.trim()) return { success: false, error: "Search query is empty" };
@@ -2188,6 +2269,7 @@ export default function App() {
                onToggleLocalPause={toggleLocalPause} 
                onLeave={leaveSession} 
                syncOffset={syncEngine.offset} 
+               onAmbientSelect={applyAmbientVibe}
             />
           )}
           {view === "library" && (

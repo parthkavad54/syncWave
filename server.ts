@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import { createServer } from "http";
@@ -107,7 +108,7 @@ async function startServer() {
     const apiKey = process.env.YOUTUBE_API_KEY;
     if (!apiKey) {
       console.error("YOUTUBE_API_KEY is missing in environment");
-      return res.status(500).json({ error: "YouTube API key not configured" });
+      return res.status(500).json({ error: "YouTube API key not configured. Add YOUTUBE_API_KEY to your .env file." });
     }
 
     try {

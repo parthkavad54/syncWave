@@ -1,0 +1,9 @@
+{
+  "projectId": "your-firebase-project-id",
+  "appId": "1:YOUR_PROJECT_NUMBER:web:YOUR_WEB_APP_ID",
+  "authDomain": "your-project-id.firebaseapp.com",
+  "firestoreDatabaseId": "your-firestore-db-id-or-leave-empty",
+  "storageBucket": "your-project-id.firebasestorage.app",
+  "messagingSenderId": "YOUR_MESSAGING_SENDER_ID",
+  "measurementId": ""
+}

@@ -12,5 +12,7 @@ coverage/
 *.tsbuildinfo
 .env*
 !.env.example
+firebase-applet-config.json
+!firebase-applet-config.example.json
 public/uploads/*
 !public/uploads/.gitkeep
