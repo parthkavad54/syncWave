@@ -8,7 +8,7 @@ import {
   Send, Heart, Zap, GripVertical,
   Mic, MicOff, UserMinus, Ban,
   CloudRain, Flame, Coffee, Trees, Wind, Volume2,
-  Search, Loader2
+  Search, Loader2, Trash2
 } from "lucide-react";
 import {
   DndContext,
@@ -33,7 +33,7 @@ import ThreeBackground from "./components/ThreeBackground";
 import { syncEngine } from "./lib/syncEngine";
 import { audioEngine } from "./lib/audioEngine";
 import { Party, Track, PlaybackState } from "./lib/types";
-import { musicDb, saveTrackOffline } from "./lib/musicDb";
+import { musicDb, saveTrackOffline, deleteTrackOffline } from "./lib/musicDb";
 import { QRCodeSVG } from "qrcode.react";
 import { GoogleGenAI, Type } from "@google/genai";
 import { nanoid } from "nanoid";
@@ -1375,13 +1375,17 @@ const LibraryView = ({
   myLibrary, 
   onSearch, 
   onUpload, 
-  onAddToQueue, 
+  onAddToQueue,
+  onPlayTrackNow,
+  onRemoveTrack, 
   onBack 
 }: { 
   myLibrary: Track[], 
   onSearch: (q: string) => Promise<{ success: boolean, error: string | null }>, 
   onUpload: (e: any, onStatus: any) => void, 
-  onAddToQueue: (t: Track) => void, 
+  onAddToQueue: (t: Track) => void,
+  onPlayTrackNow: (t: Track) => void,
+  onRemoveTrack: (t: Track) => void, 
   onBack: () => void 
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -1624,22 +1628,37 @@ const LibraryView = ({
                   variants={staggerItem}
                   initial="initial"
                   animate="animate"
-                  whileHover={{ scale: 1.05 }}
-                  className="glass-card group cursor-pointer border-white/5 hover:border-party-violet/20 h-full"
-                  onClick={() => onAddToQueue(track)}
+                  className="glass-card group flex flex-col border-white/5 hover:border-party-violet/20 h-full"
                 >
-                  <div className="aspect-square rounded-xl bg-white/10 mb-4 overflow-hidden relative">
-                    <div className="absolute inset-0 bg-party-violet/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <Plus size={48} className="text-white drop-shadow-lg" />
-                    </div>
+                  <div className="aspect-square rounded-xl bg-white/10 mb-4 overflow-hidden relative flex-shrink-0">
                     {track.coverArt ? (
                       <img src={track.coverArt} className="w-full h-full object-cover" />
                     ) : (
                       <Music className="w-full h-full p-12 text-white/5" />
                     )}
                   </div>
-                  <h4 className="font-bold truncate text-sm">{track.name}</h4>
-                  <p className="text-xs text-white/40 truncate">{track.artist}</p>
+                  <h4 className="font-bold truncate text-sm flex-grow">{track.name}</h4>
+                  <p className="text-xs text-white/40 truncate mb-4">{track.artist}</p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => onPlayTrackNow(track)}
+                      className="flex-1 py-2 px-3 bg-party-violet/20 hover:bg-party-violet/40 text-xs font-bold text-party-violet rounded-lg transition-colors flex items-center justify-center gap-1"
+                    >
+                      <Play size={12} /> Play
+                    </button>
+                    <button
+                      onClick={() => onAddToQueue(track)}
+                      className="flex-1 py-2 px-3 bg-white/10 hover:bg-white/20 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1"
+                    >
+                      <Plus size={12} /> Queue
+                    </button>
+                    <button
+                      onClick={() => onRemoveTrack(track)}
+                      className="flex-1 py-2 px-3 bg-red-500/20 hover:bg-red-500/40 text-xs font-bold text-red-400 rounded-lg transition-colors flex items-center justify-center gap-1"
+                    >
+                      <Trash2 size={12} /> Remove
+                    </button>
+                  </div>
                 </motion.div>
               )}
             />
@@ -2034,10 +2053,24 @@ export default function App() {
     const newQueue = [...party.queue, track];
     syncEngine.socket.emit("queue:update", { code: party.code, queue: newQueue });
     setToast(`${track.name} added to queue!`);
-    if (!party.currentTrack && !party.playbackState.playing) {
-      playTrackNow(track);
+  }, [party]);
+
+  const onPlayTrackNow = React.useCallback((track: Track) => {
+    if (!party || !isHost) return;
+    // Add to queue if not already there
+    if (!party.queue.find(t => t.id === track.id)) {
+      const newQueue = [...party.queue, track];
+      syncEngine.socket.emit("queue:update", { code: party.code, queue: newQueue });
     }
-  }, [party, playTrackNow]);
+    // Play the track
+    syncEngine.socket.emit("sync:play", { code: party.code, track_id: track.id, position_ms: 0 });
+  }, [party, isHost]);
+
+  const onRemoveTrack = React.useCallback(async (track: Track) => {
+    await deleteTrackOffline(track.id);
+    refreshLibrary();
+    setToast(`${track.name} removed from library!`);
+  }, []);
 
   const togglePlayback = () => {
     if (!party || !party.currentTrack) return;
@@ -2306,7 +2339,9 @@ export default function App() {
               myLibrary={myLibrary} 
               onSearch={executeSearch} 
               onUpload={handleUpload} 
-              onAddToQueue={onAddToQueue} 
+              onAddToQueue={onAddToQueue}
+              onPlayTrackNow={onPlayTrackNow}
+              onRemoveTrack={onRemoveTrack} 
               onBack={() => setView("host")} 
             />
           )}

@@ -21,3 +21,7 @@ export const saveTrackOffline = async (track: Track, blob?: Blob) => {
 export const getOfflineTrack = async (id: string) => {
   return await musicDb.tracks.get(id);
 };
+
+export const deleteTrackOffline = async (id: string) => {
+  await musicDb.tracks.delete(id);
+};
