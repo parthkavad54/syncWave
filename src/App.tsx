@@ -1388,6 +1388,10 @@ const LibraryView = ({
   onRemoveTrack: (t: Track) => void, 
   onBack: () => void 
 }) => {
+  // Helper: Detect if input is a platform URL (Spotify, SoundCloud, etc)
+  const detectPlatformUrl = (input: string): boolean => {
+    return /(?:spotify\.com|open\.spotify|soundcloud\.com|apple\.com\/music|deezer\.com)/.test(input);
+  };
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState<{name: string, artist: string}[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -1418,16 +1422,26 @@ const LibraryView = ({
       
       setIsSuggesting(true);
       try {
-        // Check if it's a YouTube URL
+        // Check if it's a platform URL
+        const isPlatformUrl = detectPlatformUrl(searchQuery);
         const videoIdMatch = searchQuery.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-        const query = videoIdMatch ? videoIdMatch[1] : searchQuery;
         
-        const res = await fetch(`/api/youtube/search?q=${encodeURIComponent(query)}`);
+        let endpoint = "/api/youtube/search";
+        let query = searchQuery;
+
+        if (isPlatformUrl) {
+          endpoint = "/api/music/resolve-url";
+          query = searchQuery;
+        } else if (videoIdMatch) {
+          query = videoIdMatch[1];
+        }
+
+        const res = await fetch(`${endpoint}?${isPlatformUrl ? 'url' : 'q'}=${encodeURIComponent(query)}`);
         const data = await res.json();
         if (data.error) throw new Error(data.error);
         setSuggestions(data);
       } catch (e) {
-        console.warn("YouTube search failed", e);
+        console.warn("Search failed", e);
       } finally {
         setIsSuggesting(false);
       }
@@ -1472,7 +1486,7 @@ const LibraryView = ({
                   </div>
                   <input 
                     type="text" 
-                    placeholder="Search music (e.g. 'Chill lo-fi' or URL)" 
+                    placeholder="Search music (e.g. 'Chill lo-fi', YouTube URL, or Spotify link)" 
                     className="w-full pl-12 pr-12 py-3 bg-white/5 border border-white/10 rounded-full focus:border-party-violet outline-none transition-all"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -1695,6 +1709,24 @@ export default function App() {
   const [isLocalPaused, setIsLocalPaused] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const ytPlayerRef = useRef<any>(null);
+
+  // Helper: Extract YouTube video ID from URL
+  const extractYouTubeId = (input: string): string | null => {
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
+      /^([a-zA-Z0-9_-]{11})$/ // Direct video ID
+    ];
+    for (const pattern of patterns) {
+      const match = input.match(pattern);
+      if (match) return match[1];
+    }
+    return null;
+  };
+
+  // Helper: Detect if input is a platform URL (Spotify, SoundCloud, etc)
+  const detectPlatformUrl = (input: string): boolean => {
+    return /(?:spotify\.com|open\.spotify|soundcloud\.com|apple\.com\/music|deezer\.com)/.test(input);
+  };
 
   const applyAmbientVibe = React.useCallback((vibe: { id: string, volume: number } | null) => {
     if (!vibe) {
@@ -2147,30 +2179,19 @@ export default function App() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [party, isHost, skipBackward, skipForward, toggleLocalPause, togglePlayback]);
 
-  // Helper: Extract YouTube video ID from URL
-  const extractYouTubeId = (input: string): string | null => {
-    // Handle various YouTube URL formats
-    const patterns = [
-      /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
-      /^([a-zA-Z0-9_-]{11})$/ // Direct video ID
-    ];
-    
-    for (const pattern of patterns) {
-      const match = input.match(pattern);
-      if (match) return match[1];
-    }
-    return null;
-  };
-
   const executeSearch = async (query: string) => {
     if (!query.trim()) return { success: false, error: "Search query is empty" };
     
     try {
+      const isPlatformUrl = detectPlatformUrl(query.trim());
       const videoId = extractYouTubeId(query.trim());
       let searchRes;
       
-      if (videoId) {
-        // Direct YouTube ID or URL detected - fetch metadata directly
+      if (isPlatformUrl) {
+        // Platform URL detected (Spotify, SoundCloud, etc) - use resolve-url endpoint
+        searchRes = await fetch(`/api/music/resolve-url?url=${encodeURIComponent(query.trim())}`);
+      } else if (videoId) {
+        // Direct YouTube ID or URL detected
         searchRes = await fetch(`/api/youtube/search?q=${encodeURIComponent(videoId)}`);
       } else {
         // Regular search query

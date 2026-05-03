@@ -91,6 +91,50 @@ async function startServer() {
   });
 
 
+  // Helper: Parse Spotify URL and extract track ID
+  function parseSpotifyUrl(url: string): string | null {
+    const patterns = [
+      /spotify\.com\/track\/([a-zA-Z0-9]+)/,
+      /open\.spotify\.com\/track\/([a-zA-Z0-9]+)/,
+      /^([a-zA-Z0-9]+)$/ // Direct track ID (URI format)
+    ];
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match) return match[1];
+    }
+    return null;
+  }
+
+  // Helper: Parse SoundCloud URL
+  function parseSoundCloudUrl(url: string): string | null {
+    const match = url.match(/soundcloud\.com\/[\w-]+\/[\w-]+/);
+    return match ? match[0] : null;
+  }
+
+  // Helper: Get Spotify track metadata using public API
+  async function getSpotifyTrackMetadata(trackId: string): Promise<{ title: string; artist: string } | null> {
+    try {
+      const response = await fetch(`https://api.spotify.com/v1/tracks/${trackId}`);
+      if (!response.ok) return null;
+      const data: any = await response.json();
+      return {
+        title: data.name,
+        artist: data.artists.map((a: any) => a.name).join(", ")
+      };
+    } catch (e) {
+      console.warn("Failed to fetch Spotify metadata:", e);
+      return null;
+    }
+  }
+
+  // Helper: Detect platform from URL
+  function detectPlatform(url: string): "spotify" | "soundcloud" | "youtube" | "generic" | null {
+    if (url.includes("spotify.com") || url.includes("open.spotify")) return "spotify";
+    if (url.includes("soundcloud.com")) return "soundcloud";
+    if (url.includes("youtube.com") || url.includes("youtu.be")) return "youtube";
+    return null;
+  }
+
   // YouTube API Helper
   function parseDuration(duration: string): number {
     const matches = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
@@ -137,6 +181,76 @@ async function startServer() {
       res.json(results);
     } catch (error: any) {
       console.error("YouTube Search Error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Handle Spotify and other platform URLs by converting to YouTube
+  app.get("/api/music/resolve-url", async (req, res) => {
+    const url = req.query.url as string;
+    if (!url) return res.status(400).json({ error: "URL is required" });
+
+    try {
+      const platform = detectPlatform(url);
+      let searchQuery = "";
+
+      if (platform === "spotify") {
+        const spotifyId = parseSpotifyUrl(url);
+        if (!spotifyId) return res.status(400).json({ error: "Invalid Spotify URL" });
+        
+        const metadata = await getSpotifyTrackMetadata(spotifyId);
+        if (!metadata) return res.status(400).json({ error: "Could not fetch Spotify track metadata" });
+        
+        searchQuery = `${metadata.title} ${metadata.artist}`;
+      } else if (platform === "soundcloud") {
+        const scUrl = parseSoundCloudUrl(url);
+        if (!scUrl) return res.status(400).json({ error: "Invalid SoundCloud URL" });
+        
+        // Extract artist and track from URL
+        const parts = scUrl.split("/");
+        const artist = parts[parts.length - 2];
+        const track = parts[parts.length - 1];
+        searchQuery = `${track} ${artist}`.replace(/-/g, " ");
+      } else if (platform === "youtube") {
+        // Already YouTube, just search directly
+        searchQuery = url;
+      } else {
+        // Treat as generic search query
+        searchQuery = url;
+      }
+
+      // Search on YouTube for the track
+      const apiKey = process.env.YOUTUBE_API_KEY;
+      if (!apiKey) {
+        return res.status(500).json({ error: "YouTube API key not configured" });
+      }
+
+      const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(searchQuery)}&type=video&videoCategoryId=10&maxResults=5&key=${apiKey}`;
+      const searchRes = await fetch(searchUrl);
+      const searchData: any = await searchRes.json();
+
+      if (searchData.error) throw new Error(searchData.error.message);
+
+      const videoIds = searchData.items.map((item: any) => item.id.videoId);
+      if (videoIds.length === 0) return res.json([]);
+
+      const detailsUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoIds.join(',')}&key=${apiKey}`;
+      const detailsRes = await fetch(detailsUrl);
+      const detailsData: any = await detailsRes.json();
+
+      const results = detailsData.items.map((item: any) => ({
+        id: item.id,
+        title: item.snippet.title,
+        artist: item.snippet.channelTitle,
+        thumbnail: item.snippet.thumbnails.high?.url || item.snippet.thumbnails.default?.url,
+        duration: parseDuration(item.contentDetails.duration),
+        type: 'youtube',
+        source: platform || 'unknown'
+      }));
+
+      res.json(results);
+    } catch (error: any) {
+      console.error("URL Resolution Error:", error);
       res.status(500).json({ error: error.message });
     }
   });
