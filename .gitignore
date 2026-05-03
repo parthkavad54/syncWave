@@ -1,0 +1,16 @@
+node_modules/
+build/
+dist/
+coverage/
+.vite/
+.turbo/
+.cache/
+.idea/
+.vscode/
+.DS_Store
+*.log
+*.tsbuildinfo
+.env*
+!.env.example
+public/uploads/*
+!public/uploads/.gitkeep

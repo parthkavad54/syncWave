@@ -1,0 +1,6 @@
+{
+  "name": "SyncWave — Synchronized Party Music App",
+  "description": "A precision synchronized music player for 150+ devices with 3D visuals and real-time host control.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": []
+}

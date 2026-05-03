@@ -1,10 +1,10 @@
-# VibeSync AI: Collaborative Party Session System
+# SyncWave: Collaborative Party Session System
 
-VibeSync AI is a modern, full-stack web application designed to solve the chaos of music management at gatherings. It allows a host to create a "Party Room" where guests can join, suggest music via AI-powered search, and influence the environment's "Vibe" in real-time.
+SyncWave is a modern, full-stack web application designed to solve the chaos of music management at gatherings. It allows a host to create a party room where guests can join, suggest music via AI-powered search, and influence the session in real time.
 
 ## 🚀 The Problem We Solve
 
-In traditional party settings, one person usually controls the aux cord, or guests shout requests that get forgotten. **VibeSync AI** provides:
+In traditional party settings, one person usually controls the aux cord, or guests shout requests that get forgotten. **SyncWave** provides:
 - **Collaborative Queue Control**: Guests can add tracks to a shared queue without sharing a physical device.
 - **AI-Powered Discovery**: Use natural language (e.g., "Chill evening lo-fi") to find music immediately via Gemini AI integration.
 - **Environmental Immersion**: Interactive 3D backgrounds and "Ambient Vibes" (Rain, Fire, Forest, etc.) that sync across all connected devices.
@@ -59,7 +59,7 @@ In traditional party settings, one person usually controls the aux cord, or gues
    ```
    The app will typically be available at `http://localhost:3000`.
 
-5. **Production Build**:
+6. **Production Build**:
    ```bash
    npm run build
    npm start
@@ -75,4 +75,4 @@ In traditional party settings, one person usually controls the aux cord, or gues
 
 ---
 
-Built with ❤️ for music lovers everywhere.
+Built for shared listening and live session control.
