@@ -962,8 +962,8 @@ const HostDashboard = ({
             />
           </div>
         </div>
-        <div className="px-4 w-full">
-          <PlaybackProgress currentTime={currentTime} duration={duration} />
+        <div className="px-4 w-full text-[10px] uppercase tracking-[0.2em] text-white/40 font-mono">
+          <span>{formatTime(currentTime)} / {formatTime(duration)}</span>
         </div>
       </div>
       <VibeSelector 
