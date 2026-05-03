@@ -287,10 +287,7 @@ async function startServer() {
         let track = party.currentTrack?.id === track_id ? party.currentTrack : party.queue.find(t => t.id === track_id);
         
         if (track) {
-          // If it was in queue, move it to current and remove from queue
-          if (party.currentTrack?.id !== track_id) {
-            party.queue = party.queue.filter(t => t.id !== track_id);
-          }
+          // Play track but KEEP it in queue for replay (don't remove from queue)
           party.currentTrack = track;
           
           const scheduledDelay = 1500; // 1.5s delay for buffering and hardware prep

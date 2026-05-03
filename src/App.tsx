@@ -1361,9 +1361,8 @@ const ListenerView = ({
                 <Plus size={14} /> Suggest a Track
               </button>
               <div className="w-full">
-                  <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.2em] text-white/40 font-mono">
-                    <span>{formatTime(currentTime)} / {formatTime(duration)}</span>
-                    <span>Live Session {party?.code}</span>
+                  <div className="text-center text-[10px] uppercase tracking-[0.2em] text-white/40 font-mono">
+                    Live Session {party?.code}
                   </div>
               </div>
           </div>
@@ -1412,9 +1411,14 @@ const LibraryView = ({
         setSuggestions([]);
         return;
       }
+      
       setIsSuggesting(true);
       try {
-        const res = await fetch(`/api/youtube/search?q=${encodeURIComponent(searchQuery)}`);
+        // Check if it's a YouTube URL
+        const videoIdMatch = searchQuery.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+        const query = videoIdMatch ? videoIdMatch[1] : searchQuery;
+        
+        const res = await fetch(`/api/youtube/search?q=${encodeURIComponent(query)}`);
         const data = await res.json();
         if (data.error) throw new Error(data.error);
         setSuggestions(data);
@@ -2107,12 +2111,37 @@ export default function App() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [party, isHost, skipBackward, skipForward, toggleLocalPause, togglePlayback]);
 
+  // Helper: Extract YouTube video ID from URL
+  const extractYouTubeId = (input: string): string | null => {
+    // Handle various YouTube URL formats
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
+      /^([a-zA-Z0-9_-]{11})$/ // Direct video ID
+    ];
+    
+    for (const pattern of patterns) {
+      const match = input.match(pattern);
+      if (match) return match[1];
+    }
+    return null;
+  };
+
   const executeSearch = async (query: string) => {
     if (!query.trim()) return { success: false, error: "Search query is empty" };
     
     try {
-      const res = await fetch(`/api/youtube/search?q=${encodeURIComponent(query)}`);
-      const data = await res.json();
+      const videoId = extractYouTubeId(query.trim());
+      let searchRes;
+      
+      if (videoId) {
+        // Direct YouTube ID or URL detected - fetch metadata directly
+        searchRes = await fetch(`/api/youtube/search?q=${encodeURIComponent(videoId)}`);
+      } else {
+        // Regular search query
+        searchRes = await fetch(`/api/youtube/search?q=${encodeURIComponent(query)}`);
+      }
+      
+      const data = await searchRes.json();
       
       if (data.error) throw new Error(data.error);
       
@@ -2132,10 +2161,10 @@ export default function App() {
         return { success: true, error: null };
       }
       
-      return { success: false, error: "No songs found on YouTube for this query." };
+      return { success: false, error: "No songs found for this query." };
     } catch (e: any) {
-      console.error("YouTube Search Error:", e);
-      return { success: false, error: e.message || "Failed to search YouTube" };
+      console.error("Search Error:", e);
+      return { success: false, error: e.message || "Failed to search" };
     }
   };
 
