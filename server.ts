@@ -348,23 +348,36 @@ async function startServer() {
     });
 
     socket.on("party:join", ({ code, listener_id, listener_name }, callback) => {
-      const party = parties.get(code.toUpperCase());
+      // Guard: callback must be a function (client might not send one)
+      if (typeof callback !== "function") return;
+      if (!code || typeof code !== "string") {
+        callback({ success: false, error: "Invalid session code." });
+        return;
+      }
+
+      const upperCode = code.trim().toUpperCase();
+      const party = parties.get(upperCode);
       if (!party) {
-        callback({ success: false, error: "Session not found" });
+        callback({ success: false, error: `Session "${upperCode}" not found. The host may have ended the session.` });
         return;
       }
 
       if (party.bannedIds.includes(listener_id)) {
-        callback({ success: false, error: "You are banned from this session" });
+        callback({ success: false, error: "You are banned from this session." });
         return;
       }
 
-      socket.join(code.toUpperCase());
-      const newListener = { id: socket.id, userId: listener_id, name: listener_name, device_info: "Listener", isMuted: false };
+      socket.join(upperCode);
+      // Deduplicate: remove any stale entry with same userId OR same socketId
+      party.listeners = party.listeners.filter(
+        (l: any) => l.userId !== listener_id && l.id !== socket.id
+      );
+      const displayName = (listener_name || "").trim() || `Guest ${party.listeners.length + 1}`;
+      const newListener = { id: socket.id, userId: listener_id, name: displayName, device_info: "Listener", isMuted: false };
       party.listeners.push(newListener);
-      
+
       callback({ success: true });
-      io.to(code.toUpperCase()).emit("party:update", party);
+      io.to(upperCode).emit("party:update", party);
     });
 
     socket.on("party:leave", ({ code }) => {

@@ -2,13 +2,12 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence, Reorder } from "motion/react";
 import { Virtuoso, VirtuosoGrid } from "react-virtuoso";
 import { 
-  Play, Pause, SkipForward, SkipBack, ChevronUp, ChevronDown, 
+  Play, Pause, SkipForward, SkipBack,
   Users, Music, Share2, Plus, LogOut, 
   Upload, QrCode as QrCodeIcon, Headphones,
-  Send, Heart, Zap, GripVertical,
+  Zap, GripVertical,
   Mic, MicOff, UserMinus, Ban,
-  CloudRain, Flame, Coffee, Trees, Wind, Volume2,
-  Search, Loader2, Trash2
+  Search, Loader2, Trash2, Signal
 } from "lucide-react";
 import {
   DndContext,
@@ -39,13 +38,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { nanoid } from "nanoid";
 import YouTube from "react-youtube";
 
-const AMBIENT_PRESETS = [
-  { id: 'rain', name: 'Rain', url: 'https://assets.mixkit.co/sfx/preview/mixkit-heavy-rain-loop-2393.mp3', icon: CloudRain },
-  { id: 'fire', name: 'Campfire', url: 'https://assets.mixkit.co/sfx/preview/mixkit-campfire-crackles-1330.mp3', icon: Flame },
-  { id: 'cafe', name: 'Cafe', url: 'https://assets.mixkit.co/sfx/preview/mixkit-people-talking-in-a-crowded-place-2538.mp3', icon: Coffee },
-  { id: 'forest', name: 'Forest', url: 'https://assets.mixkit.co/sfx/preview/mixkit-forest-birds-and-crickets-in-the-evening-36.mp3', icon: Trees },
-  { id: 'wind', name: 'Wind', url: 'https://assets.mixkit.co/sfx/preview/mixkit-soft-wind-loop-1166.mp3', icon: Wind },
-];
+// Ambient Atmosphere removed
 
 const SyncStats = () => {
   const [stats, setStats] = useState({ offset: 0, rtt: 0 });
@@ -159,66 +152,7 @@ const Visualizer = ({ playing }: { playing: boolean }) => {
   );
 };
 
-const VibeSelector = ({ currentVibe, onVibeChange, isHost }: { 
-  currentVibe: { id: string, volume: number } | null | undefined, 
-  onVibeChange: (vibe: { id: string, volume: number } | null) => void,
-  isHost: boolean
-}) => {
-  return (
-    <div id="vibe-selector-container" className="bg-white/5 border border-white/10 rounded-3xl p-5 backdrop-blur-md">
-      <div className="flex items-center gap-2 mb-4">
-        <Wind size={16} className="text-party-cyan" />
-        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Ambient Atmosphere</h3>
-      </div>
-      <div className="grid grid-cols-5 gap-3">
-        <button
-          onClick={() => onVibeChange(null)}
-          className={`aspect-square flex flex-col items-center justify-center rounded-2xl border transition-all ${
-            !currentVibe ? 'border-party-violet bg-party-violet/20 shadow-lg shadow-party-violet/10' : 'border-white/5 bg-white/5 grayscale opacity-40 hover:opacity-100 hover:grayscale-0'
-          }`}
-        >
-          <div className="text-[8px] font-black uppercase tracking-widest">Off</div>
-        </button>
-        {AMBIENT_PRESETS.map((p) => {
-          const Icon = p.icon;
-          return (
-            <button
-              key={p.id}
-              onClick={() => onVibeChange({ id: p.id, volume: 0.3 })}
-              className={`aspect-square flex flex-col items-center justify-center rounded-2xl border transition-all ${
-                currentVibe?.id === p.id 
-                  ? 'border-party-cyan bg-party-cyan/20 shadow-lg shadow-party-cyan/10' 
-                  : 'border-white/5 bg-white/5 grayscale opacity-40 hover:opacity-100 hover:grayscale-0'
-              }`}
-            >
-              <Icon size={18} className={currentVibe?.id === p.id ? "text-party-cyan" : "text-white"} />
-              <span className="text-[7px] font-black mt-2 uppercase tracking-tight">{p.name}</span>
-            </button>
-          )
-        })}
-      </div>
-      {currentVibe && isHost && (
-        <motion.div 
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          className="mt-6 flex items-center gap-4 px-2"
-        >
-          <Volume2 size={14} className="text-white/30" />
-          <input 
-            type="range"
-            min="0"
-            max="1"
-            step="0.05"
-            value={currentVibe.volume}
-            onChange={(e) => onVibeChange({ ...currentVibe, volume: parseFloat(e.target.value) })}
-            className="flex-1 accent-party-cyan h-1 bg-white/10 rounded-full appearance-none cursor-pointer"
-          />
-          <span className="text-[9px] font-mono text-white/30 w-8">{(currentVibe.volume * 100).toFixed(0)}%</span>
-        </motion.div>
-      )}
-    </div>
-  );
-};
+// VibeSelector removed â€” Ambient Atmosphere feature removed
 
 const Toast = ({ message, onClose }: { message: string, onClose: () => void }) => {
   return (
@@ -482,7 +416,7 @@ const ReactionOverlay = ({ reactions }: { reactions: { id: string; type: string 
            transition={{ duration: 2, ease: "circOut" }}
            className="absolute text-5xl"
          >
-           {r.type === 'fire' ? '🔥' : r.type === 'heart' ? '❤️' : '🎵'}
+           {r.type === 'fire' ? 'ðŸ”¥' : r.type === 'heart' ? 'â¤ï¸' : 'ðŸŽµ'}
          </motion.div>
       ))}
     </AnimatePresence>
@@ -697,7 +631,7 @@ const JoinView = ({ onBack, onJoin }: { onBack: () => void, onJoin: (code: strin
                     ref={el => { refs.current[i] = el; }}
                     type="text"
                     maxLength={1}
-                    placeholder="•"
+                    placeholder="â€¢"
                     value={char}
                     className={`w-10 sm:w-14 h-14 sm:h-20 bg-white/5 border ${char ? 'border-party-violet bg-party-violet/5' : 'border-white/10'} rounded-xl sm:rounded-2xl text-center text-2xl sm:text-4xl font-display font-bold focus:border-party-violet focus:ring-4 focus:ring-party-violet/20 outline-none transition-all placeholder:text-white/10`}
                     onPaste={handlePaste}
@@ -850,7 +784,6 @@ const HostDashboard = ({
   onPlayTrack,
   onSkipForward,
   onSkipBackward,
-  onUpdateVibe,
   onShowToast
 }: { 
   party: Party | null, 
@@ -872,7 +805,6 @@ const HostDashboard = ({
   onPlayTrack: (track: Track) => void,
   onSkipForward: () => void,
   onSkipBackward: () => void,
-  onUpdateVibe: (vibe: { id: string, volume: number } | null) => void,
   onShowToast: (msg: string) => void
 }) => (
   <div className="min-h-screen grid lg:grid-cols-12 gap-6 p-6">
@@ -966,11 +898,6 @@ const HostDashboard = ({
           <span>{formatTime(currentTime)} / {formatTime(duration)}</span>
         </div>
       </div>
-      <VibeSelector 
-        currentVibe={party?.ambientVibe} 
-        onVibeChange={(vibe) => onUpdateVibe(vibe)} 
-        isHost={true} 
-      />
     </div>
 
     {/* Middle Column: Queue & Library */}
@@ -1220,7 +1147,7 @@ const ListenerView = ({
   onToggleLocalPause, 
   onLeave, 
   syncOffset,
-  onAmbientSelect
+  onSuggestTrack
 }: { 
   party: Party | null, 
   isLocalPaused: boolean, 
@@ -1229,144 +1156,196 @@ const ListenerView = ({
   onToggleLocalPause: () => void, 
   onLeave: () => void, 
   syncOffset: number,
-  onAmbientSelect: (vibe: { id: string, volume: number } | null) => void
+  onSuggestTrack: (q: string) => Promise<{ success: boolean; error: string | null }>
 }) => {
   const me = party?.listeners.find(l => l.id === syncEngine.socket.id);
   const isMuted = me?.isMuted;
+  const syncQuality = Math.abs(syncOffset) < 50 ? 'great' : Math.abs(syncOffset) < 150 ? 'good' : 'poor';
+  const syncColor = syncQuality === 'great' ? 'text-green-400' : syncQuality === 'good' ? 'text-yellow-400' : 'text-red-400';
+  const syncDot  = syncQuality === 'great' ? 'bg-green-400' : syncQuality === 'good' ? 'bg-yellow-400' : 'bg-red-400';
+
+  const [showSuggest, setShowSuggest] = useState(false);
+  const [suggestQuery, setSuggestQuery] = useState('');
+  const [suggestLoading, setSuggestLoading] = useState(false);
+  const [suggestMsg, setSuggestMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  const handleSuggest = async () => {
+    if (!suggestQuery.trim() || suggestLoading) return;
+    setSuggestLoading(true); setSuggestMsg(null);
+    const r = await onSuggestTrack(suggestQuery.trim());
+    setSuggestLoading(false);
+    if (r.success) {
+      setSuggestMsg({ ok: true, text: `Added "${suggestQuery}" to queue!` });
+      setSuggestQuery('');
+      setTimeout(() => { setShowSuggest(false); setSuggestMsg(null); }, 2000);
+    } else {
+      setSuggestMsg({ ok: false, text: r.error || 'Nothing found. Try different keywords.' });
+    }
+  };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6">
-      <div className="absolute top-8 left-8 flex items-center gap-4">
-        <div className="flex items-center gap-2 px-4 py-2 glass rounded-full">
-            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-            <span className="font-mono text-sm">SYNC: {Math.abs(syncOffset).toFixed(1)}ms</span>
+    <div className="min-h-screen flex flex-col bg-transparent">
+
+      {/* â”€â”€â”€ Top bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 py-3 bg-gradient-to-b from-black/70 to-transparent">
+        <div className="flex items-center gap-2">
+          <div className={`w-1.5 h-1.5 rounded-full ${syncDot} animate-pulse`} />
+          <span className={`text-[11px] font-mono font-bold ${syncColor} uppercase tracking-wider`}>
+            {syncQuality === 'great' ? 'Synced' : syncQuality === 'good' ? 'Syncing' : 'Lag'} Â· {Math.abs(syncOffset).toFixed(0)}ms
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] font-mono text-white/40 px-2.5 py-1 glass rounded-full flex items-center gap-1.5">
+            <Users size={10} className="text-party-cyan" /> {party?.listeners.length ?? 0}
+          </span>
+          <button onClick={onLeave} className="text-[11px] font-bold px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 flex items-center gap-1.5 transition-all">
+            <LogOut size={10} /> Leave
+          </button>
         </div>
       </div>
 
-      <div className="absolute top-8 right-8">
-        <div className="flex items-center gap-2 px-4 py-2 glass rounded-full">
-            <Users size={16} className="text-party-cyan" />
-            <span className="font-mono text-sm">{party?.listeners.length}</span>
-        </div>
-      </div>
+      {/* â”€â”€â”€ Body â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <div className="flex flex-col items-center justify-center min-h-screen px-6 pt-16 pb-8 gap-5">
 
-      <div className="max-w-xl w-full text-center px-4">
-        <div className="relative mb-8 md:mb-12">
-            <ReactiveBackground playing={party?.playbackState.playing || false} />
-            <div className="relative z-10 w-full max-w-[280px] sm:max-w-[400px] aspect-square mx-auto rounded-[40px] bg-white/5 border border-white/10 overflow-hidden shadow-2xl">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={party?.currentTrack?.id || "empty"}
-                  initial={{ opacity: 0, scale: 1.1, filter: "blur(10px)" }}
-                  animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-                  exit={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }}
-                  transition={{ duration: 0.6, ease: "circOut" }}
-                  className="w-full h-full"
-                >
-                  {party?.currentTrack?.coverArt ? (
-                    <img src={party.currentTrack.coverArt} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-white/5 to-transparent">
-                      <Music size={120} className="text-white/10" />
-                    </div>
-                  )}
-                </motion.div>
-              </AnimatePresence>
-            </div>
-            
-            {/* Visualizer Rings */}
-            {party?.playbackState.playing && Array.from({length: 3}).map((_, i) => (
-              <motion.div
-                key={i}
-                initial={{ scale: 1, opacity: 0.3 }}
-                animate={{ scale: 2, opacity: 0 }}
-                transition={{ repeat: Infinity, duration: 2, delay: i * 0.6 }}
-                className="absolute inset-0 border-2 border-party-violet/20 rounded-[40px] z-0"
-              />
-            ))}
+        {/* Album Art */}
+        <div className="relative w-64 h-64 sm:w-72 sm:h-72 flex-shrink-0">
+          <ReactiveBackground playing={party?.playbackState.playing && !isLocalPaused || false} />
+          <div className="relative z-10 w-full h-full rounded-[36px] overflow-hidden border border-white/10 shadow-2xl">
+            <AnimatePresence mode="wait">
+              <motion.div key={party?.currentTrack?.id || 'empty'} initial={{ opacity: 0, scale: 1.05 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4 }} className="w-full h-full">
+                {party?.currentTrack?.coverArt
+                  ? <img src={party.currentTrack.coverArt} className="w-full h-full object-cover" alt="" />
+                  : <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-party-violet/10 to-transparent"><Music size={80} className="text-white/10" /></div>
+                }
+              </motion.div>
+            </AnimatePresence>
+          </div>
+          {party?.playbackState.playing && !isLocalPaused && [0, 1, 2].map(i => (
+            <motion.div key={i} initial={{ scale: 1, opacity: 0.2 }} animate={{ scale: 1.9, opacity: 0 }}
+              transition={{ repeat: Infinity, duration: 2.5, delay: i * 0.75 }}
+              className="absolute inset-0 rounded-[36px] border border-party-violet/20 z-0"
+            />
+          ))}
         </div>
-        
-        <Visualizer playing={party?.playbackState.playing || false} />
 
-        <motion.div
-           key={party?.currentTrack?.id || "empty-listener-text"}
-           initial={{ opacity: 0, y: 20 }}
-           animate={{ opacity: 1, y: 0 }}
-           transition={{ delay: 0.2 }}
-           className="text-center px-4"
-        >
-          <h2 className="text-2xl sm:text-4xl font-display font-bold mb-2 truncate">{party?.currentTrack?.name || "Waiting for track..."}</h2>
-          <p className="text-lg sm:text-xl text-white/40 mb-8 sm:mb-12">{party?.currentTrack?.artist || "Syncing with Host"}</p>
+        {/* Track info */}
+        <motion.div key={party?.currentTrack?.id || 'idle'} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="text-center w-full max-w-xs">
+          <h2 className="text-xl font-display font-bold truncate mb-1">{party?.currentTrack?.name || 'Waiting for hostâ€¦'}</h2>
+          <p className="text-sm text-white/40 truncate">{party?.currentTrack?.artist || 'Connect & vibe'}</p>
         </motion.div>
 
-        <div className="flex justify-center gap-6 mb-8">
-            <motion.button 
-              whileTap={{ scale: isMuted ? 1 : 0.8 }} 
-              onClick={() => !isMuted && syncEngine.socket.emit("client:reaction", { code: party?.code, type: 'fire' })} 
-              className={`w-12 h-12 rounded-full glass flex items-center justify-center text-2xl ${isMuted ? 'opacity-20 cursor-not-allowed' : 'hover:bg-white/10'}`}
-              disabled={isMuted}
-            >🔥</motion.button>
-            <motion.button 
-              whileTap={{ scale: isMuted ? 1 : 0.8 }} 
-              onClick={() => !isMuted && syncEngine.socket.emit("client:reaction", { code: party?.code, type: 'heart' })} 
-              className={`w-12 h-12 rounded-full glass flex items-center justify-center text-2xl ${isMuted ? 'opacity-20 cursor-not-allowed' : 'hover:bg-white/10'}`}
-              disabled={isMuted}
-            >❤️</motion.button>
-            <motion.button 
-              whileTap={{ scale: isMuted ? 1 : 0.8 }} 
-              onClick={() => !isMuted && syncEngine.socket.emit("client:reaction", { code: party?.code, type: 'music' })} 
-              className={`w-12 h-12 rounded-full glass flex items-center justify-center text-2xl ${isMuted ? 'opacity-20 cursor-not-allowed' : 'hover:bg-white/10'}`}
-              disabled={isMuted}
-            >🎵</motion.button>
-        </div>
-        {isMuted && <p className="text-[10px] text-red-500 font-bold uppercase mb-4 tracking-widest animate-pulse">You are muted by the host</p>}
+        {/* Progress */}
+        {party?.currentTrack && (
+          <div className="w-full max-w-xs">
+            <PlaybackProgress currentTime={currentTime} duration={duration} />
+          </div>
+        )}
 
-        <div className="flex justify-center gap-6">
-            <button 
-              className={`w-16 h-16 rounded-full glass flex items-center justify-center transition-all ${isLocalPaused ? 'bg-party-violet text-white scale-110' : 'hover:bg-white/10'}`}
-              onClick={onToggleLocalPause}
-            >
-              {isLocalPaused ? <Play size={24} /> : <Pause size={24} />}
-            </button>
-            <button 
-              className="w-16 h-16 rounded-full glass flex items-center justify-center hover:bg-red-500/20 hover:text-red-400 group"
-              onClick={onLeave}
-            >
-              <LogOut size={24} />
-            </button>
+        {/* Mini Visualizer */}
+        <div className="w-full max-w-xs">
+          <Visualizer playing={!!(party?.playbackState.playing && !isLocalPaused)} />
         </div>
-        
-        {isLocalPaused && (
-          <motion.p 
-            initial={{ opacity: 0, y: 10 }} 
-            animate={{ opacity: 1, y: 0 }} 
-            className="mt-6 text-party-violet font-bold animate-pulse"
+
+        {/* Muted banner */}
+        <AnimatePresence>
+          {isMuted && (
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold">
+              <MicOff size={12} /> Muted by host
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Controls: emojis + pause */}
+        <div className="flex items-center gap-3">
+          {(['ðŸ”¥','â¤ï¸','ðŸŽµ'] as const).map((emoji, i) => {
+            const type = ['fire','heart','music'][i];
+            return (
+              <motion.button key={emoji}
+                whileTap={{ scale: isMuted ? 1 : 0.65 }}
+                whileHover={{ scale: isMuted ? 1 : 1.12, y: isMuted ? 0 : -2 }}
+                onClick={() => !isMuted && syncEngine.socket.emit('client:reaction', { code: party?.code, type })}
+                disabled={!!isMuted}
+                className={`w-13 h-13 w-[52px] h-[52px] rounded-2xl glass text-2xl flex items-center justify-center transition-all ${isMuted ? 'opacity-20 cursor-not-allowed' : 'hover:bg-white/10'}`}
+              >{emoji}</motion.button>
+            );
+          })}
+
+          <motion.button whileTap={{ scale: 0.9 }} onClick={onToggleLocalPause}
+            className={`w-[52px] h-[52px] rounded-2xl flex items-center justify-center transition-all ${
+              isLocalPaused ? 'bg-party-violet shadow-lg shadow-party-violet/40 text-white' : 'glass hover:bg-white/10'
+            }`}
           >
-            Paused locally. Tap play to resync.
+            {isLocalPaused ? <Play size={20} /> : <Pause size={20} />}
+          </motion.button>
+        </div>
+
+        {isLocalPaused && (
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs text-party-violet/80 animate-pulse -mt-2">
+            Paused locally Â· tap â–¶ to resync
           </motion.p>
         )}
 
-        <div className="mt-12 text-left">
-          <VibeSelector 
-            currentVibe={party?.ambientVibe}
-            onVibeChange={onAmbientSelect} 
-            isHost={false}
-          />
-        </div>
+        {/* Suggest a Track */}
+        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+          onClick={() => { setShowSuggest(true); setSuggestMsg(null); }}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-sm font-bold transition-all"
+        >
+          <Plus size={14} className="text-party-cyan" /> Suggest a Track
+        </motion.button>
+
+        <div className="text-[10px] font-mono text-white/20 tracking-widest">SESSION Â· {party?.code}</div>
       </div>
 
-      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 w-full max-w-lg px-6">
-          <div className="glass-card py-4 flex flex-col gap-4">
-              <button className="w-full py-2 mb-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-bold transition-all flex items-center justify-center gap-2">
-                <Plus size={14} /> Suggest a Track
-              </button>
-              <div className="w-full">
-                  <div className="text-center text-[10px] uppercase tracking-[0.2em] text-white/40 font-mono">
-                    Live Session {party?.code}
-                  </div>
+      {/* â”€â”€â”€ Suggest Track Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <AnimatePresence>
+        {showSuggest && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+            onClick={e => { if (e.target === e.currentTarget) setShowSuggest(false); }}
+          >
+            <motion.div initial={{ y: 50, scale: 0.96 }} animate={{ y: 0, scale: 1 }} exit={{ y: 50, scale: 0.96 }}
+              transition={{ type: 'spring', stiffness: 280, damping: 26 }}
+              className="w-full max-w-md glass-card p-6"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="text-base font-display font-bold flex items-center gap-2">
+                  <Music size={16} className="text-party-cyan" /> Suggest a Track
+                </h3>
+                <button onClick={() => setShowSuggest(false)} className="text-white/30 hover:text-white p-1"><LogOut size={14} className="rotate-180" /></button>
               </div>
-          </div>
-      </div>
+              <p className="text-xs text-white/35 mb-4">Search by song name or artist â€” it'll be added to the host's queue.</p>
+
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
+                  <input autoFocus type="text" placeholder="e.g. Blinding Lightsâ€¦"
+                    className="w-full pl-8 pr-3 py-2.5 text-sm bg-white/5 border border-white/10 rounded-xl focus:border-party-violet outline-none transition-colors"
+                    value={suggestQuery}
+                    onChange={e => { setSuggestQuery(e.target.value); setSuggestMsg(null); }}
+                    onKeyDown={e => e.key === 'Enter' && handleSuggest()}
+                  />
+                </div>
+                <button onClick={handleSuggest} disabled={suggestLoading || !suggestQuery.trim()}
+                  className="px-4 py-2.5 rounded-xl bg-party-violet hover:bg-party-violet/80 text-sm font-bold disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 transition-all"
+                >
+                  {suggestLoading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><Plus size={14} /> Add</>}
+                </button>
+              </div>
+
+              <AnimatePresence>
+                {suggestMsg && (
+                  <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                    className={`mt-3 text-xs font-medium px-1 ${suggestMsg.ok ? 'text-green-400' : 'text-red-400'}`}
+                  >
+                    {suggestMsg.ok ? 'âœ“' : 'âš '} {suggestMsg.text}
+                  </motion.p>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
@@ -1728,17 +1707,7 @@ export default function App() {
     return /(?:spotify\.com|open\.spotify|soundcloud\.com|apple\.com\/music|deezer\.com)/.test(input);
   };
 
-  const applyAmbientVibe = React.useCallback((vibe: { id: string, volume: number } | null) => {
-    if (!vibe) {
-      audioEngine.stopAllAmbient();
-      return;
-    }
-
-    const preset = AMBIENT_PRESETS.find(p => p.id === vibe.id);
-    if (preset) {
-      audioEngine.playAmbient(preset.id, preset.url, vibe.volume);
-    }
-  }, []);
+  // Ambient vibe removed
 
   useEffect(() => {
     if (toast) {
@@ -1765,8 +1734,23 @@ export default function App() {
     }
   };
 
+  // Pending join code — stored when user needs to enter name first
+  const [pendingJoinCode, setPendingJoinCode] = React.useState<string | null>(null);
+
   const joinSession = React.useCallback((code: string) => {
-    const upperCode = code.toUpperCase();
+    const upperCode = code.toUpperCase().trim();
+    if (!upperCode || upperCode.length < 6) {
+      setToast("Invalid session code. Please enter a 6-character code.");
+      return;
+    }
+
+    // If no name yet, show name prompt and store code to join after
+    if (!userName) {
+      setPendingJoinCode(upperCode);
+      setShowNamePrompt(true);
+      return;
+    }
+
     setIsHost(false);
     syncEngine.socket.emit("party:join", { code: upperCode, listener_id: userId, listener_name: userName }, (res: { success: boolean, error?: string }) => {
       if (res.success) {
@@ -1775,7 +1759,7 @@ export default function App() {
         url.searchParams.set("join", upperCode);
         window.history.pushState({}, "", url);
       } else {
-        alert(res.error || `Party "${upperCode}" not found!`);
+        setToast(res.error || `Session "${upperCode}" not found. Check the code and try again.`);
       }
     });
   }, [userName, userId]);
@@ -1797,13 +1781,7 @@ export default function App() {
     };
   }, []);
 
-  useEffect(() => {
-    if (party?.ambientVibe) {
-      applyAmbientVibe(party.ambientVibe);
-    } else {
-      applyAmbientVibe(null);
-    }
-  }, [party?.ambientVibe, applyAmbientVibe]);
+  // Ambient vibe effect removed
 
   const leaveSession = React.useCallback(() => {
     if (party) {
@@ -1835,11 +1813,7 @@ export default function App() {
     }
   }, [party, isHost]);
 
-  const updateVibe = React.useCallback((vibe: { id: string, volume: number } | null) => {
-    if (!party || !isHost) return;
-    applyAmbientVibe(vibe);
-    syncEngine.socket.emit("party:update-vibe", { code: party.code, vibe });
-  }, [party, isHost, applyAmbientVibe]);
+  // updateVibe removed with Ambient Atmosphere feature
 
   const clearQueue = React.useCallback(() => {
     if (!party || !isHost) return;
@@ -1938,6 +1912,26 @@ export default function App() {
     return () => clearInterval(interval);
   }, []);
 
+  // â”€â”€ Always-on reaction listener (works for both host AND listener) â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  useEffect(() => {
+    const socket = syncEngine.socket;
+    const handler = ({ type }: { type: string }) => {
+      setReactions(prev => [...prev, { id: `${Date.now()}-${nanoid()}`, type }]);
+    };
+    socket.on("sync:reaction", handler);
+    return () => { socket.off("sync:reaction", handler); };
+  }, []);
+
+  // â”€â”€ Prefetch next track in queue while current track plays â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  useEffect(() => {
+    if (!party?.currentTrack || !party.queue.length) return;
+    const currentIdx = party.queue.findIndex(t => t.id === party.currentTrack?.id);
+    const nextTrack = party.queue[currentIdx + 1];
+    if (nextTrack && nextTrack.type !== 'youtube' && nextTrack.url) {
+      audioEngine.prefetch(nextTrack.id, nextTrack.url);
+    }
+  }, [party?.currentTrack?.id]);
+
   useEffect(() => {
     const interval = setInterval(() => {
       if (party?.currentTrack && party.playbackState.playing && !isLocalPaused && !isHost) {
@@ -2015,39 +2009,35 @@ export default function App() {
             }
           }
         } else {
-          // Switch to Direct Audio mode
+          // â”€â”€ Direct Audio mode (MP3/WAV uploads) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           if (ytPlayerRef.current) ytPlayerRef.current.pauseVideo();
 
+          const now = syncEngine.getCorrectedTime();
+
           if (audioEngine.trackId !== currentTrack.id) {
+            // New track â€” load, seek to exact server position, play
+            const expectedStart = syncEngine.getExpectedPosition(
+              playback.position,
+              playback.scheduledStartTime ?? playback.timestamp,
+              playback.playing
+            );
+
             const streamUrl = await audioEngine.loadAndBuffer(currentTrack.id, currentTrack.url);
-            audioEngine.play(streamUrl, currentTrack.id, 0, () => {
-              if (isHost && updatedParty.queue.length > 0) {
-                skipForward();
-              }
-            }, (err) => {
-              setToast(`Error playing ${currentTrack.name}. Unplayable source?`);
+            audioEngine.play(streamUrl, currentTrack.id, Math.max(0, expectedStart), () => {
+              if (isHost && updatedParty.queue.length > 0) skipForward();
+            }, () => {
+              setToast(`Error playing ${currentTrack.name}.`);
             });
           }
-          
-          const localPos = audioEngine.getPosition() * 1000;
-          const now = syncEngine.getCorrectedTime();
-          const serverPos = playback.position + (playback.playing ? (now - playback.timestamp) : 0);
-          const drift = Math.abs(localPos - serverPos);
 
           if (playback.playing && !isLocalPaused) {
-            if (playback.scheduledStartTime && now < playback.scheduledStartTime) {
-              const waitDuration = playback.scheduledStartTime - now;
-              setTimeout(() => {
-                const refreshedNow = syncEngine.getCorrectedTime();
-                const jumpTo = playback.position + (refreshedNow - playback.scheduledStartTime);
-                audioEngine.seek(jumpTo / 1000);
-                audioEngine.resume();
-              }, waitDuration);
-            } else {
-              audioEngine.syncTo(serverPos / 1000, drift);
-              audioEngine.resume();
-            }
+            // Start continuous 500ms drift correction loop
+            audioEngine.startSyncLoop(() =>
+              syncEngine.getExpectedPosition(playback.position, playback.timestamp, true)
+            );
+            audioEngine.resume();
           } else {
+            audioEngine.stopSyncLoop();
             audioEngine.pause();
           }
         }
@@ -2057,9 +2047,7 @@ export default function App() {
       }
     });
 
-    socket.on("sync:reaction", ({ type }) => {
-      setReactions(prev => [...prev, { id: `${Date.now()}-${nanoid()}`, type }]);
-    });
+    // sync:reaction is handled in a dedicated always-on effect below
 
     socket.on("error", (msg) => {
       alert(msg);
@@ -2077,7 +2065,6 @@ export default function App() {
 
     return () => {
       socket.off("party:update");
-      socket.off("sync:reaction");
       socket.off("party:kicked");
       socket.off("error");
     };
@@ -2294,6 +2281,22 @@ export default function App() {
           setUserName(name);
           localStorage.setItem("syncwave_user", name);
           setShowNamePrompt(false);
+          // Auto-join if user was in the middle of joining a session
+          if (pendingJoinCode) {
+            const code = pendingJoinCode;
+            setPendingJoinCode(null);
+            setIsHost(false);
+            syncEngine.socket.emit("party:join", { code, listener_id: userId, listener_name: name }, (res: { success: boolean, error?: string }) => {
+              if (res.success) {
+                setView("listener");
+                const url = new URL(window.location.href);
+                url.searchParams.set("join", code);
+                window.history.pushState({}, "", url);
+              } else {
+                setToast(res.error || `Session "${code}" not found. Check the code and try again.`);
+              }
+            });
+          }
         }} />
       )}
 
@@ -2343,7 +2346,6 @@ export default function App() {
               onPlayTrack={playTrackNow}
               onSkipForward={skipForward}
               onSkipBackward={skipBackward}
-              onUpdateVibe={updateVibe}
             />
           )}
           {view === "listener" && (
@@ -2354,8 +2356,8 @@ export default function App() {
                duration={duration} 
                onToggleLocalPause={toggleLocalPause} 
                onLeave={leaveSession} 
-               syncOffset={syncEngine.offset} 
-               onAmbientSelect={applyAmbientVibe}
+               syncOffset={syncEngine.offset}
+               onSuggestTrack={executeSearch}
             />
           )}
           {view === "library" && (

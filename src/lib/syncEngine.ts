@@ -8,17 +8,16 @@ class SyncEngine {
   private offsetHistory: { offset: number; rtt: number }[] = [];
 
   constructor() {
-    // Use VITE_API_URL if provided (for production), otherwise use default
-    const socketUrl = import.meta.env.VITE_API_URL || '';
-    
+    const socketUrl = import.meta.env.VITE_API_URL || "";
+
     this.socket = io(socketUrl, {
       reconnection: true,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
-      reconnectionAttempts: 5,
-      transports: ['websocket', 'polling']
+      reconnectionAttempts: 10,
+      transports: ["websocket", "polling"],
     });
-    
+
     this.startSync();
   }
 
@@ -30,37 +29,48 @@ class SyncEngine {
 
     this.socket.on("clock:pong", ({ t1, t2, t3 }) => {
       const t4 = Date.now();
-      // NTP formula: Offset = ((T2 - T1) + (T3 - T4)) / 2
-      // RTT = (T4 - T1) - (T3 - T2)
       const currentRTT = (t4 - t1) - (t3 - t2);
       const currentOffset = ((t2 - t1) + (t3 - t4)) / 2;
 
-      // Filter: We only care about low-jitter samples
       this.offsetHistory.push({ offset: currentOffset, rtt: currentRTT });
-      
-      if (this.offsetHistory.length > 20) this.offsetHistory.shift();
+      if (this.offsetHistory.length > 30) this.offsetHistory.shift();
 
-      // Find the samples with RTT in the bottom 25th percentile (the "cleanest" network paths)
-      const sortedByRTT = [...this.offsetHistory].sort((a, b) => a.rtt - b.rtt);
-      const bestSamples = sortedByRTT.slice(0, Math.max(1, Math.floor(sortedByRTT.length * 0.25)));
-      
-      this.offset = bestSamples.reduce((sum, s) => sum + s.offset, 0) / bestSamples.length;
+      // Use the bottom 33% RTT samples (cleanest network paths)
+      const sorted = [...this.offsetHistory].sort((a, b) => a.rtt - b.rtt);
+      const best = sorted.slice(0, Math.max(1, Math.floor(sorted.length * 0.33)));
+      this.offset = best.reduce((sum, s) => sum + s.offset, 0) / best.length;
       this.rtt = currentRTT;
     });
 
+    // Do 15 rapid pings on startup for faster convergence
     const runInitialSync = async () => {
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 15; i++) {
         doSync();
-        await new Promise(r => setTimeout(r, 200));
+        await new Promise((r) => setTimeout(r, 100));
       }
     };
 
     runInitialSync();
-    this.syncInterval = setInterval(doSync, 5000); // Stable tracking every 5s
+    this.syncInterval = setInterval(doSync, 3000);
   }
 
-  public getCorrectedTime() {
+  /** Server-corrected wall clock in ms */
+  public getCorrectedTime(): number {
     return Date.now() + this.offset;
+  }
+
+  /**
+   * Given a playbackState from the server, computes the exact position in seconds
+   * that SHOULD be playing right now.
+   */
+  public getExpectedPosition(
+    positionMs: number,
+    timestampMs: number,
+    playing: boolean
+  ): number {
+    if (!playing) return positionMs / 1000;
+    const elapsed = Math.max(0, this.getCorrectedTime() - timestampMs);
+    return (positionMs + elapsed) / 1000;
   }
 
   public destroy() {
