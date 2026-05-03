@@ -59,7 +59,7 @@ In traditional party settings, one person usually controls the aux cord, or gues
    ```
    The app will typically be available at `http://localhost:3000`.
 
-6. **Production Build**:
+5. **Production Build**:
    ```bash
    npm run build
    npm start
