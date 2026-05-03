@@ -1,0 +1,26 @@
+{
+  "name": "syncwave-backend",
+  "version": "1.0.0",
+  "description": "SyncWave backend — Express + Socket.IO server for Fly.io",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "tsx server.ts",
+    "dev": "tsx server.ts"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.2.3",
+    "express": "^4.21.2",
+    "multer": "^2.1.1",
+    "nanoid": "^5.1.9",
+    "socket.io": "^4.8.3",
+    "tsx": "^4.21.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.14.0",
+    "typescript": "~5.8.2"
+  }
+}

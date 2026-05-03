@@ -1,0 +1,38 @@
+# ──────────────────────────────────────────────
+# Fly.io configuration for SyncWave backend
+# ──────────────────────────────────────────────
+# IMPORTANT: Change the app name below to your own unique name.
+# Run: fly launch --name syncwave-backend
+# ──────────────────────────────────────────────
+
+app = "syncwave-backend"
+primary_region = "sin"   # Singapore — closest to India
+
+[build]
+  # Dockerfile in this backend/ folder is used automatically
+
+[env]
+  NODE_ENV = "production"
+  PORT     = "3000"
+
+# HTTP service configuration
+[http_service]
+  internal_port       = 3000
+  force_https         = true
+  auto_stop_machines  = true   # Saves cost on Fly.io free tier
+  auto_start_machines = true
+  min_machines_running = 0
+
+# Health check so Fly.io knows the server is alive
+[[http_service.checks]]
+  grace_period  = "10s"
+  interval      = "30s"
+  method        = "GET"
+  path          = "/health"
+  timeout       = "5s"
+
+# Machine size — shared-cpu-1x with 256MB is enough for Socket.IO
+[[vm]]
+  memory   = "256mb"
+  cpu_kind = "shared"
+  cpus     = 1
