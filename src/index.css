@@ -29,6 +29,8 @@
   --color-party-black: var(--theme-bg);
   --color-party-violet: #7C3AED;
   --color-party-cyan: #06B6D4;
+  --color-theme: var(--theme-text);
+  --color-theme-inverse: var(--theme-bg);
 }
 
 @layer base {

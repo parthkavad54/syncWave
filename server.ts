@@ -10,6 +10,7 @@ import { fileURLToPath } from "url";
 import multer from "multer";
 import { nanoid } from "nanoid";
 import Redis from "ioredis";
+import RedisMock from "ioredis-mock";
 import parser from "socket.io-msgpack-parser";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -21,7 +22,9 @@ if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-const redis = new Redis(process.env.REDIS_URL || "redis://127.0.0.1:6379");
+const redis = process.env.REDIS_URL 
+  ? new Redis(process.env.REDIS_URL) 
+  : new RedisMock();
 
 async function getParty(code: string) {
   const data = await redis.hgetall(`syncwave:room:${code}`);

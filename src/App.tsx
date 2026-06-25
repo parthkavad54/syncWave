@@ -54,15 +54,15 @@ const SyncStats = () => {
   }, []);
 
   return (
-    <div className="flex items-center gap-3 px-3 py-1 bg-black/20 rounded-full border border-white/5 backdrop-blur-sm">
+    <div className="flex items-center gap-3 px-3 py-1 bg-black/20 rounded-full border border-[var(--theme-glass-border)] backdrop-blur-sm">
       <div className="flex items-center gap-1.5">
         <Zap size={10} className={stats.rtt < 100 ? "text-green-400" : "text-yellow-400"} />
-        <span className="text-[10px] font-mono text-white/60">{stats.rtt.toFixed(0)}ms</span>
+        <span className="text-[10px] font-mono text-theme/">{stats.rtt.toFixed(0)}ms</span>
       </div>
-      <div className="w-px h-2 bg-white/10" />
+      <div className="w-px h-2 bg-[var(--theme-glass-bg)]" />
       <div className="flex items-center gap-1.5">
         <Headphones size={10} className="text-party-violet" />
-        <span className="text-[10px] font-mono text-white/60">{stats.offset > 0 ? "+" : ""}{stats.offset.toFixed(1)}ms</span>
+        <span className="text-[10px] font-mono text-theme/">{stats.offset > 0 ? "+" : ""}{stats.offset.toFixed(1)}ms</span>
       </div>
     </div>
   );
@@ -110,11 +110,11 @@ const staggerItem: any = {
 
 // --- SKELETON COMPONENTS ---
 const TrackSkeleton = () => (
-  <div className="flex items-center gap-4 p-3 rounded-2xl bg-white/5 animate-pulse">
-    <div className="w-12 h-12 rounded-xl bg-white/10 flex-shrink-0" />
+  <div className="flex items-center gap-4 p-3 rounded-2xl bg-[var(--theme-glass-bg)] animate-pulse">
+    <div className="w-12 h-12 rounded-xl bg-[var(--theme-glass-bg)] flex-shrink-0" />
     <div className="flex-1 space-y-2">
-      <div className="h-4 bg-white/10 rounded w-1/2" />
-      <div className="h-3 bg-white/10 rounded w-1/3" />
+      <div className="h-4 bg-[var(--theme-glass-bg)] rounded w-1/2" />
+      <div className="h-3 bg-[var(--theme-glass-bg)] rounded w-1/3" />
     </div>
   </div>
 );
@@ -163,10 +163,10 @@ const Toast = ({ message, onClose }: { message: string, onClose: () => void }) =
       initial={{ opacity: 0, y: 50, x: '-50%' }}
       animate={{ opacity: 1, y: 0, x: '-50%' }}
       exit={{ opacity: 0, scale: 0.95, y: 10, x: '-50%' }}
-      className="fixed bottom-10 left-1/2 z-[1000] px-6 py-3 rounded-2xl shadow-2xl backdrop-blur-3xl bg-white/10 border border-white/20 flex items-center gap-3"
+      className="fixed bottom-10 left-1/2 z-[1000] px-6 py-3 rounded-2xl shadow-2xl backdrop-blur-3xl bg-[var(--theme-glass-bg)] border border-[var(--theme-glass-border)] flex items-center gap-3"
     >
       <div className="w-2 h-2 rounded-full bg-party-cyan animate-pulse" />
-      <span className="text-xs font-black uppercase tracking-widest text-white">{message}</span>
+      <span className="text-xs font-black uppercase tracking-widest text-theme">{message}</span>
     </motion.div>
   );
 };
@@ -351,12 +351,12 @@ const PlaybackProgress = ({
   const progress = getProgressPercent(currentTime, duration);
   return (
     <div className="w-full space-y-2">
-      <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.2em] text-white/40 font-mono">
+      <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.2em] text-theme/ font-mono">
         <span>{formatTime(currentTime)} / {formatTime(duration)}</span>
         <span>{rightLabel || `${Math.round(progress)}% complete`}</span>
       </div>
-      <div className="h-2 rounded-full bg-white/10 overflow-hidden border border-white/5">
-        <div className="h-full rounded-full bg-gradient-to-r from-party-violet via-party-cyan to-white/90 transition-[width] duration-300 ease-linear" style={{ width: `${progress}%` }} />
+      <div className="h-2 rounded-full bg-[var(--theme-glass-bg)] overflow-hidden border border-[var(--theme-glass-border)]">
+        <div className="h-full rounded-full bg-gradient-to-r from-party-violet via-party-cyan to-[var(--theme-text)] opacity-90 transition-[width] duration-300 ease-linear" style={{ width: `${progress}%` }} />
       </div>
     </div>
   );
@@ -384,7 +384,7 @@ const NamePrompt = ({ onComplete }: { onComplete: (name: string) => void }) => {
           autoFocus
           type="text" 
           placeholder="Enter your name" 
-          className="w-full px-6 py-4 bg-white/5 border border-white/20 rounded-2xl mb-6 text-center text-xl"
+          className="w-full px-6 py-4 bg-[var(--theme-glass-bg)] border border-[var(--theme-glass-border)] rounded-2xl mb-6 text-center text-xl"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={(e) => {
@@ -400,7 +400,7 @@ const NamePrompt = ({ onComplete }: { onComplete: (name: string) => void }) => {
         >
           Join the Waves
         </button>
-        <p className="text-white/40 text-sm italic mt-4">Setting your stage name...</p>
+        <p className="text-theme/ text-sm italic mt-4">Setting your stage name...</p>
       </div>
     </motion.div>
   );
@@ -447,7 +447,7 @@ const VolumeOverlay = ({ volume, visible }: { volume: number, visible: boolean }
         initial={{ opacity: 0, scale: 0.8, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.8, y: -20 }}
-        className="fixed bottom-12 left-1/2 -translate-x-1/2 z-[100] glass px-6 py-4 rounded-3xl flex items-center gap-4 text-white font-bold pointer-events-none shadow-2xl"
+        className="fixed bottom-12 left-1/2 -translate-x-1/2 z-[100] glass px-6 py-4 rounded-3xl flex items-center gap-4 text-theme font-bold pointer-events-none shadow-2xl"
       >
         {volume === 0 ? <VolumeX size={28} /> : volume < 0.5 ? <Volume1 size={28} /> : <Volume2 size={28} />}
         <div className="text-xl w-12 text-center">{Math.round(volume * 100)}%</div>
@@ -472,7 +472,7 @@ const Landing = ({
       <h1 className="text-5xl sm:text-7xl font-display font-bold tracking-tighter mb-4 bg-clip-text text-transparent bg-gradient-to-r from-party-violet to-party-cyan">
         SyncWave
       </h1>
-      <p className="text-lg sm:text-xl text-white/60 font-medium px-4">One beat. Every device. All together.</p>
+      <p className="text-lg sm:text-xl text-theme/ font-medium px-4">One beat. Every device. All together.</p>
     </motion.div>
 
     <div className="grid md:grid-cols-2 gap-6 max-w-4xl w-full">
@@ -480,26 +480,26 @@ const Landing = ({
         whileHover={{ scale: 1.02, y: -5 }}
         whileTap={{ scale: 0.98 }}
         onClick={onHost}
-        className="glass-card hover:bg-white/10 group text-left border-party-violet/20"
+        className="glass-card hover:bg-[var(--theme-glass-bg)] group text-left border-party-violet/20"
       >
         <div className="w-14 h-14 rounded-2xl bg-party-violet/20 flex items-center justify-center mb-6 group-hover:bg-party-violet/30 transition-colors">
           <Plus className="text-party-violet" size={32} />
         </div>
         <h2 className="text-3xl font-display font-bold mb-2">Start a Party</h2>
-        <p className="text-white/40">Host a session and broadcast your library to 150+ devices.</p>
+        <p className="text-theme/">Host a session and broadcast your library to 150+ devices.</p>
       </motion.button>
 
       <motion.button
         whileHover={{ scale: 1.02, y: -5 }}
         whileTap={{ scale: 0.98 }}
         onClick={onJoin}
-        className="glass-card hover:bg-white/10 group text-left border-party-cyan/20"
+        className="glass-card hover:bg-[var(--theme-glass-bg)] group text-left border-party-cyan/20"
       >
         <div className="w-14 h-14 rounded-2xl bg-party-cyan/20 flex items-center justify-center mb-6 group-hover:bg-party-cyan/30 transition-colors">
           <Users className="text-party-cyan" size={32} />
         </div>
         <h2 className="text-3xl font-display font-bold mb-2">Join a Party</h2>
-        <p className="text-white/40">Connect to a live session via QR code or invite code.</p>
+        <p className="text-theme/">Connect to a live session via QR code or invite code.</p>
       </motion.button>
     </div>
   </div>
@@ -608,14 +608,14 @@ const JoinView = ({ onBack, onJoin }: { onBack: () => void, onJoin: (code: strin
         />
       </div>
 
-      <button onClick={onBack} className="absolute top-8 left-8 text-white/40 hover:text-white flex items-center gap-2 px-4 py-2 glass rounded-full z-10 transition-all hover:bg-white/10 group">
+      <button onClick={onBack} className="absolute top-8 left-8 text-theme/ hover:text-theme flex items-center gap-2 px-4 py-2 glass rounded-full z-10 transition-all hover:bg-[var(--theme-glass-bg)] group">
         <LogOut size={20} className="rotate-180 group-hover:-translate-x-1 transition-transform" /> <span className="hidden sm:inline">Back home</span>
       </button>
 
       <motion.div 
         initial={{ opacity: 0, y: 20, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        className="glass-card max-w-md w-full text-center relative overflow-hidden p-8 sm:p-12 shadow-2xl border-white/10"
+        className="glass-card max-w-md w-full text-center relative overflow-hidden p-8 sm:p-12 shadow-2xl border-[var(--theme-glass-border)]"
       >
         {scanning ? (
           <div className="space-y-6">
@@ -624,14 +624,14 @@ const JoinView = ({ onBack, onJoin }: { onBack: () => void, onJoin: (code: strin
                 <QrCodeIcon size={24} className="text-party-violet animate-pulse" />
               </div>
               <h3 className="text-xl font-bold">Scanning...</h3>
-              <p className="text-xs text-white/40">Point your camera at a host's QR code</p>
+              <p className="text-xs text-theme/">Point your camera at a host's QR code</p>
             </div>
-            <div id="reader" className="w-full aspect-square rounded-[32px] overflow-hidden bg-black/40 border-2 border-white/10 relative">
+            <div id="reader" className="w-full aspect-square rounded-[32px] overflow-hidden bg-black/40 border-2 border-[var(--theme-glass-border)] relative">
                <div className="absolute inset-0 border-2 border-party-violet/50 rounded-[32px] animate-pulse pointer-events-none" />
             </div>
             <button 
               onClick={() => setScanning(false)}
-              className="w-full py-4 rounded-2xl bg-white/5 hover:bg-white/10 font-bold transition-all border border-white/10"
+              className="w-full py-4 rounded-2xl bg-[var(--theme-glass-bg)] hover:bg-[var(--theme-glass-bg)] font-bold transition-all border border-[var(--theme-glass-border)]"
             >
               Cancel Scan
             </button>
@@ -649,7 +649,7 @@ const JoinView = ({ onBack, onJoin }: { onBack: () => void, onJoin: (code: strin
             </motion.div>
             
             <h2 className="text-4xl font-display font-bold mb-3 tracking-tight">Join the Beat</h2>
-            <p className="text-white/40 mb-10 leading-relaxed px-2 text-sm sm:text-base">Enter the <span className="text-party-violet font-bold">6-character code</span> or scan a host's QR code to synchronize your waves.</p>
+            <p className="text-theme/ mb-10 leading-relaxed px-2 text-sm sm:text-base">Enter the <span className="text-party-violet font-bold">6-character code</span> or scan a host's QR code to synchronize your waves.</p>
 
             <div className="flex gap-2 sm:gap-4 justify-center mb-10">
               {code.map((char, i) => (
@@ -666,7 +666,7 @@ const JoinView = ({ onBack, onJoin }: { onBack: () => void, onJoin: (code: strin
                     maxLength={1}
                     placeholder="â€¢"
                     value={char}
-                    className={`w-10 sm:w-14 h-14 sm:h-20 bg-white/5 border ${char ? 'border-party-violet bg-party-violet/5' : 'border-white/10'} rounded-xl sm:rounded-2xl text-center text-2xl sm:text-4xl font-display font-bold focus:border-party-violet focus:ring-4 focus:ring-party-violet/20 outline-none transition-all placeholder:text-white/10`}
+                    className={`w-10 sm:w-14 h-14 sm:h-20 bg-[var(--theme-glass-bg)] border ${char ? 'border-party-violet bg-party-violet/5' : 'border-[var(--theme-glass-border)]'} rounded-xl sm:rounded-2xl text-center text-2xl sm:text-4xl font-display font-bold focus:border-party-violet focus:ring-4 focus:ring-party-violet/20 outline-none transition-all placeholder:text-theme/`}
                     onPaste={handlePaste}
                     onChange={(e) => {
                       const val = (e.target as HTMLInputElement).value.toUpperCase().replace(/[^A-Z0-9]/g, "");
@@ -711,14 +711,14 @@ const JoinView = ({ onBack, onJoin }: { onBack: () => void, onJoin: (code: strin
             </motion.button>
 
             <div className="mt-12 flex items-center gap-4">
-              <div className="flex-1 h-px bg-white/5"></div>
-              <span className="text-[10px] uppercase tracking-[0.2em] text-white/20 font-bold whitespace-nowrap">Instant Connect</span>
-              <div className="flex-1 h-px bg-white/5"></div>
+              <div className="flex-1 h-px bg-[var(--theme-glass-bg)]"></div>
+              <span className="text-[10px] uppercase tracking-[0.2em] text-theme/ font-bold whitespace-nowrap">Instant Connect</span>
+              <div className="flex-1 h-px bg-[var(--theme-glass-bg)]"></div>
             </div>
 
             <button 
               onClick={handleStartScanning}
-              className="mt-8 w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-white/5 hover:bg-white/10 transition-all border border-white/10 font-bold text-white/60 hover:text-white group"
+              className="mt-8 w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-[var(--theme-glass-bg)] hover:bg-[var(--theme-glass-bg)] transition-all border border-[var(--theme-glass-border)] font-bold text-theme/ hover:text-theme group"
             >
               <QrCodeIcon size={20} className="group-hover:text-party-cyan transition-colors" /> <span className="text-sm">Scan QR Code</span>
             </button>
@@ -762,17 +762,17 @@ const SortableTrackItem = React.memo(({
       style={style}
       className={`flex flex-col mb-2 group ${isDragging ? 'shadow-2xl shadow-party-violet/20' : ''}`}
     >
-      <div className={`flex items-center gap-3 p-3 rounded-2xl transition-all border ${isCurrent ? 'bg-party-violet/10 border-party-violet/40' : isDragging ? 'bg-white/20 border-party-violet/40' : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10'} cursor-default`}>
+      <div className={`flex items-center gap-3 p-3 rounded-2xl transition-all border ${isCurrent ? 'bg-party-violet/10 border-party-violet/40' : isDragging ? 'bg-[var(--theme-glass-bg)] border-party-violet/40' : 'bg-[var(--theme-glass-bg)] border-[var(--theme-glass-border)] hover:bg-[var(--theme-glass-bg)] hover:border-[var(--theme-glass-border)]'} cursor-default`}>
         <div 
           {...attributes} 
           {...listeners}
-          className="flex items-center px-1 cursor-grab active:cursor-grabbing text-white/20 hover:text-party-violet transition-colors"
+          className="flex items-center px-1 cursor-grab active:cursor-grabbing text-theme/ hover:text-party-violet transition-colors"
         >
           <GripVertical size={20} />
         </div>
         <div 
            onClick={() => onPlayTrack(track)}
-           className="w-12 h-12 rounded-xl bg-white/10 flex-shrink-0 flex items-center justify-center overflow-hidden cursor-pointer active:scale-95 transition-transform"
+           className="w-12 h-12 rounded-xl bg-[var(--theme-glass-bg)] flex-shrink-0 flex items-center justify-center overflow-hidden cursor-pointer active:scale-95 transition-transform"
         >
           {track.coverArt ? <img src={track.coverArt} className="w-full h-full object-cover" /> : <Music size={16} />}
         </div>
@@ -781,7 +781,7 @@ const SortableTrackItem = React.memo(({
             <div className="mb-1 text-[9px] font-black uppercase tracking-[0.25em] text-party-violet">Now Playing</div>
           )}
           <h4 className="font-bold truncate text-sm">{track.name}</h4>
-          <p className="text-xs text-white/40 truncate">{track.artist}</p>
+          <p className="text-xs text-theme/ truncate">{track.artist}</p>
         </div>
         
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -817,7 +817,7 @@ const HostNowPlaying = React.memo(({
     </div>
     <div className="relative mb-8 group">
       <div className="absolute -inset-4 bg-gradient-to-r from-party-violet to-party-cyan rounded-full opacity-20 blur-2xl group-hover:opacity-40 transition-opacity"></div>
-      <div className="w-64 h-64 rounded-3xl bg-white/5 overflow-hidden border border-white/10 relative z-10">
+      <div className="w-64 h-64 rounded-3xl bg-[var(--theme-glass-bg)] overflow-hidden border border-[var(--theme-glass-border)] relative z-10">
         <AnimatePresence mode="wait">
           <motion.div
             key={party?.currentTrack?.id || "empty"}
@@ -830,8 +830,8 @@ const HostNowPlaying = React.memo(({
             {party?.currentTrack?.coverArt ? (
               <img src={party.currentTrack.coverArt} className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-white/10 to-transparent">
-                <Music size={80} className="text-white/20" />
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-theme/10 to-transparent">
+                <Music size={80} className="text-theme/" />
               </div>
             )}
           </motion.div>
@@ -848,28 +848,28 @@ const HostNowPlaying = React.memo(({
       onClick={onTogglePlayback}
     >
       <h2 className="text-3xl font-display font-bold mb-1 truncate w-full">{party?.currentTrack?.name || "Ready to Rock"}</h2>
-      <p className="text-white/40 mb-8">{party?.currentTrack?.artist || "Upload music to begin"}</p>
+      <p className="text-theme/ mb-8">{party?.currentTrack?.artist || "Upload music to begin"}</p>
     </motion.div>
 
     <div className="flex items-center gap-8 mb-8">
       <motion.button 
         whileTap={{ scale: 0.9 }} 
         onClick={onSkipBackward}
-        className="text-white/60 hover:text-white"
+        className="text-theme/ hover:text-theme"
       >
         <SkipBack size={32} />
       </motion.button>
       <motion.button 
         whileTap={{ scale: 0.9 }}
         onClick={onTogglePlayback}
-        className="w-20 h-20 rounded-full bg-white text-party-black flex items-center justify-center shadow-[0_0_30px_rgba(255,255,255,0.3)]"
+        className="w-20 h-20 rounded-full bg-theme text-theme-inverse flex items-center justify-center shadow-[0_0_30px_var(--theme-glass-border)]"
       >
         {party?.playbackState.playing ? <Pause size={36} fill="currentColor" /> : <Play size={36} fill="currentColor" className="ml-1" />}
       </motion.button>
       <motion.button 
         whileTap={{ scale: 0.9 }} 
         onClick={onSkipForward}
-        className="text-white/60 hover:text-white"
+        className="text-theme/ hover:text-theme"
       >
         <SkipForward size={32} />
       </motion.button>
@@ -882,16 +882,16 @@ const HostNowPlaying = React.memo(({
         max={duration || 1}
         value={currentTime}
         onChange={onSeek}
-        className="w-full h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer accent-party-violet"
+        className="w-full h-1.5 bg-[var(--theme-glass-bg)] rounded-full appearance-none cursor-pointer accent-party-violet"
       />
-      <div className="absolute top-0 left-4 right-4 h-1.5 bg-white/10 rounded-full pointer-events-none overflow-hidden">
+      <div className="absolute top-0 left-4 right-4 h-1.5 bg-[var(--theme-glass-bg)] rounded-full pointer-events-none overflow-hidden">
         <div 
           className="h-full bg-gradient-to-r from-party-violet to-party-cyan rounded-full transition-[width] duration-300 ease-linear"
           style={{ width: `${getProgressPercent(currentTime, duration)}%` }}
         />
       </div>
     </div>
-    <div className="px-4 w-full text-[10px] uppercase tracking-[0.2em] text-white/40 font-mono">
+    <div className="px-4 w-full text-[10px] uppercase tracking-[0.2em] text-theme/ font-mono">
       <span>{formatTime(currentTime)} / {formatTime(duration)}</span>
     </div>
   </div>
@@ -948,7 +948,7 @@ const HostDashboard = ({
   onDownloadHistory?: () => void
 }) => (
   <div className="min-h-screen grid lg:grid-cols-12 gap-6 p-6">
-    <button onClick={onLeaveParty} className="absolute top-8 left-8 text-white/40 hover:text-white flex items-center gap-2 px-4 py-2 glass rounded-full z-10 transition-all hover:pl-2">
+    <button onClick={onLeaveParty} className="absolute top-8 left-8 text-theme/ hover:text-theme flex items-center gap-2 px-4 py-2 glass rounded-full z-10 transition-all hover:pl-2">
       <LogOut size={20} className="rotate-180" /> Leave
     </button>
     {/* Left Column: Now Playing */}
@@ -959,7 +959,7 @@ const HostDashboard = ({
         </div>
         <div className="relative mb-8 group">
           <div className="absolute -inset-4 bg-gradient-to-r from-party-violet to-party-cyan rounded-full opacity-20 blur-2xl group-hover:opacity-40 transition-opacity"></div>
-          <div className="w-64 h-64 rounded-3xl bg-white/5 overflow-hidden border border-white/10 relative z-10">
+          <div className="w-64 h-64 rounded-3xl bg-[var(--theme-glass-bg)] overflow-hidden border border-[var(--theme-glass-border)] relative z-10">
             <AnimatePresence mode="wait">
               <motion.div
                 key={party?.currentTrack?.id || "empty"}
@@ -972,8 +972,8 @@ const HostDashboard = ({
                 {party?.currentTrack?.coverArt ? (
                   <img src={party.currentTrack.coverArt} className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-white/10 to-transparent">
-                    <Music size={80} className="text-white/20" />
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-theme/10 to-transparent">
+                    <Music size={80} className="text-theme/" />
                   </div>
                 )}
               </motion.div>
@@ -991,28 +991,28 @@ const HostDashboard = ({
           onClick={onTogglePlayback}
         >
           <h2 className="text-3xl font-display font-bold mb-1 truncate w-full">{party?.currentTrack?.name || "Ready to Rock"}</h2>
-          <p className="text-white/40 mb-8">{party?.currentTrack?.artist || "Upload music to begin"}</p>
+          <p className="text-theme/ mb-8">{party?.currentTrack?.artist || "Upload music to begin"}</p>
         </motion.div>
 
         <div className="flex items-center gap-8 mb-8">
           <motion.button 
             whileTap={{ scale: 0.9 }} 
             onClick={onSkipBackward}
-            className="text-white/60 hover:text-white"
+            className="text-theme/ hover:text-theme"
           >
             <SkipBack size={32} />
           </motion.button>
           <motion.button 
             whileTap={{ scale: 0.9 }}
             onClick={onTogglePlayback}
-            className="w-20 h-20 rounded-full bg-white text-party-black flex items-center justify-center shadow-[0_0_30px_rgba(255,255,255,0.3)]"
+            className="w-20 h-20 rounded-full bg-theme text-theme-inverse flex items-center justify-center shadow-[0_0_30px_var(--theme-glass-border)]"
           >
             {party?.playbackState.playing ? <Pause size={36} fill="currentColor" /> : <Play size={36} fill="currentColor" className="ml-1" />}
           </motion.button>
           <motion.button 
             whileTap={{ scale: 0.9 }} 
             onClick={onSkipForward}
-            className="text-white/60 hover:text-white"
+            className="text-theme/ hover:text-theme"
           >
             <SkipForward size={32} />
           </motion.button>
@@ -1025,16 +1025,16 @@ const HostDashboard = ({
             max={duration || 1}
             value={currentTime}
             onChange={onSeek}
-            className="w-full h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer accent-party-violet"
+            className="w-full h-1.5 bg-[var(--theme-glass-bg)] rounded-full appearance-none cursor-pointer accent-party-violet"
           />
-          <div className="absolute top-0 left-4 right-4 h-1.5 bg-white/10 rounded-full pointer-events-none overflow-hidden">
+          <div className="absolute top-0 left-4 right-4 h-1.5 bg-[var(--theme-glass-bg)] rounded-full pointer-events-none overflow-hidden">
             <div 
               className="h-full bg-gradient-to-r from-party-violet to-party-cyan rounded-full transition-[width] duration-300 ease-linear"
               style={{ width: `${getProgressPercent(currentTime, duration)}%` }}
             />
           </div>
         </div>
-        <div className="px-4 w-full text-[10px] uppercase tracking-[0.2em] text-white/40 font-mono">
+        <div className="px-4 w-full text-[10px] uppercase tracking-[0.2em] text-theme/ font-mono">
           <span>{formatTime(currentTime)} / {formatTime(duration)}</span>
         </div>
       </div>
@@ -1043,7 +1043,7 @@ const HostDashboard = ({
     {/* Middle Column: Queue & Library */}
     <div className="lg:col-span-5 flex flex-col gap-6">
       <div className="glass-card flex-1 flex flex-col p-0 overflow-hidden">
-        <div className="p-6 border-bottom border-white/10 flex justify-between items-center">
+        <div className="p-6 border-bottom border-[var(--theme-glass-border)] flex justify-between items-center">
           <h3 className="text-xl font-bold flex items-center gap-2">
             <Music size={20} className="text-party-violet" />
             Music Queue
@@ -1070,7 +1070,7 @@ const HostDashboard = ({
                   className="p-3 mb-4 rounded-2xl bg-party-violet/10 border border-party-violet/20 relative overflow-hidden group shadow-lg shadow-party-violet/5"
                 >
                   <div className="flex items-center gap-3 relative z-10">
-                    <div className="w-12 h-12 rounded-xl bg-white/10 flex-shrink-0 flex items-center justify-center overflow-hidden border border-white/5">
+                    <div className="w-12 h-12 rounded-xl bg-[var(--theme-glass-bg)] flex-shrink-0 flex items-center justify-center overflow-hidden border border-[var(--theme-glass-border)]">
                       {party.currentTrack.coverArt ? <img src={party.currentTrack.coverArt} className="w-full h-full object-cover" /> : <Music size={16} />}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -1079,13 +1079,13 @@ const HostDashboard = ({
                         <ReactiveMiniEqualizer playing={party.playbackState.playing} />
                       </div>
                       <h4 className="font-bold truncate text-sm">{party.currentTrack.name}</h4>
-                      <p className="text-xs text-white/40 truncate">{party.currentTrack.artist}</p>
+                      <p className="text-xs text-theme/ truncate">{party.currentTrack.artist}</p>
                     </div>
                     <div className="text-right flex flex-col items-end">
-                          <span className="text-[10px] font-mono text-white/40">{formatTime(currentTime)} / {formatTime(duration)}</span>
+                          <span className="text-[10px] font-mono text-theme/">{formatTime(currentTime)} / {formatTime(duration)}</span>
                     </div>
                   </div>
-                  <div className="absolute bottom-0 left-0 h-1.5 bg-white/5 w-full">
+                  <div className="absolute bottom-0 left-0 h-1.5 bg-[var(--theme-glass-bg)] w-full">
                          <div 
                            className="h-full bg-gradient-to-r from-party-violet to-party-cyan transition-[width] duration-300 ease-linear"
                            style={{ width: `${getProgressPercent(currentTime, duration)}%` }}
@@ -1144,10 +1144,10 @@ const HostDashboard = ({
             </div>
           )}
         </div>
-        <div className="p-4 bg-white/5 grid grid-cols-2 gap-2">
+        <div className="p-4 bg-[var(--theme-glass-bg)] grid grid-cols-2 gap-2">
           <button 
             onClick={onLibraryView}
-            className="py-3 rounded-xl bg-white/10 hover:bg-white/20 font-bold transition-colors flex items-center justify-center gap-2 text-sm"
+            className="py-3 rounded-xl bg-[var(--theme-glass-bg)] hover:bg-[var(--theme-glass-bg)] font-bold transition-colors flex items-center justify-center gap-2 text-sm"
           >
             <Plus size={18} /> Library
           </button>
@@ -1172,7 +1172,7 @@ const HostDashboard = ({
         >
           <QRCodeSVG value={`${window.location.origin}?join=${party?.code}`} size={160} level="H" />
         </a>
-        <h3 className="text-sm uppercase tracking-[0.2em] text-white/40 font-bold mb-2">Session Code</h3>
+        <h3 className="text-sm uppercase tracking-[0.2em] text-theme/ font-bold mb-2">Session Code</h3>
         <div className="text-5xl font-display font-black tracking-widest mb-6 bg-clip-text text-transparent bg-gradient-to-r from-party-violet to-party-cyan">
           {party?.code}
         </div>
@@ -1198,7 +1198,7 @@ const HostDashboard = ({
                document.body.removeChild(textArea);
              }
            }}
-           className="flex items-center gap-2 mx-auto px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 text-xs font-bold transition-all"
+           className="flex items-center gap-2 mx-auto px-4 py-2 rounded-full bg-[var(--theme-glass-bg)] hover:bg-[var(--theme-glass-bg)] text-xs font-bold transition-all"
         >
           <Share2 size={14} /> Copy Invite Link
         </button>
@@ -1217,13 +1217,13 @@ const HostDashboard = ({
          </div>
          <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
             {party?.listeners.map((l, i) => (
-              <div key={`${l.id}-${i}`} className="flex flex-col gap-2 p-3 rounded-xl bg-white/5 border border-white/5 group relative overflow-hidden transition-all hover:bg-white/10">
+              <div key={`${l.id}-${i}`} className="flex flex-col gap-2 p-3 rounded-xl bg-[var(--theme-glass-bg)] border border-[var(--theme-glass-border)] group relative overflow-hidden transition-all hover:bg-[var(--theme-glass-bg)]">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-party-cyan/20 flex items-center justify-center relative">
                     <Headphones size={14} className="text-party-cyan" />
                     {l.isMuted && (
                       <div className="absolute -top-1 -right-1 bg-red-500 rounded-full p-0.5">
-                        <MicOff size={8} className="text-white" />
+                        <MicOff size={8} className="text-theme" />
                       </div>
                     )}
                   </div>
@@ -1232,15 +1232,15 @@ const HostDashboard = ({
                       {l.name}
                       {l.isMuted && <span className="text-[8px] uppercase px-1 py-0.5 bg-red-500/20 text-red-500 rounded">Muted</span>}
                     </div>
-                    <div className="text-[10px] text-white/30 truncate">{l.id === syncEngine.socket.id ? "(You)" : l.device_info.split("(")[0]}</div>
+                    <div className="text-[10px] text-theme/ truncate">{l.id === syncEngine.socket.id ? "(You)" : l.device_info.split("(")[0]}</div>
                   </div>
                 </div>
                 
                 {l.id !== syncEngine.socket.id && (
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all pt-1 border-t border-white/5">
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all pt-1 border-t border-[var(--theme-glass-border)]">
                     <button 
                       onClick={() => onMuteListener(l.id, !l.isMuted)}
-                      className={`flex-1 text-[10px] py-1 rounded-md font-bold transition-colors flex items-center justify-center gap-1 ${l.isMuted ? 'bg-party-cyan/20 text-party-cyan' : 'bg-white/5 text-white/40 hover:bg-white/10'}`}
+                      className={`flex-1 text-[10px] py-1 rounded-md font-bold transition-colors flex items-center justify-center gap-1 ${l.isMuted ? 'bg-party-cyan/20 text-party-cyan' : 'bg-[var(--theme-glass-bg)] text-theme/ hover:bg-[var(--theme-glass-bg)]'}`}
                       title={l.isMuted ? "Unmute" : "Mute"}
                     >
                       {l.isMuted ? <Mic size={10} /> : <MicOff size={10} />}
@@ -1248,7 +1248,7 @@ const HostDashboard = ({
                     </button>
                     <button 
                       onClick={() => onKickListener(l.id)}
-                      className="flex-1 text-[10px] py-1 rounded-md bg-white/5 text-white/40 hover:bg-red-500/20 hover:text-red-400 font-bold transition-colors flex items-center justify-center gap-1"
+                      className="flex-1 text-[10px] py-1 rounded-md bg-[var(--theme-glass-bg)] text-theme/ hover:bg-red-500/20 hover:text-red-400 font-bold transition-colors flex items-center justify-center gap-1"
                       title="Kick"
                     >
                       <UserMinus size={10} />
@@ -1256,7 +1256,7 @@ const HostDashboard = ({
                     </button>
                     <button 
                       onClick={() => onBanListener(l.id)}
-                      className="flex-1 text-[10px] py-1 rounded-md bg-white/5 text-white/40 hover:bg-red-600/20 hover:text-red-500 font-bold transition-colors flex items-center justify-center gap-1"
+                      className="flex-1 text-[10px] py-1 rounded-md bg-[var(--theme-glass-bg)] text-theme/ hover:bg-red-600/20 hover:text-red-500 font-bold transition-colors flex items-center justify-center gap-1"
                       title="Ban"
                     >
                       <Ban size={10} />
@@ -1278,7 +1278,7 @@ const HostDashboard = ({
             <button 
               key={m}
               onClick={() => syncEngine.socket.emit("party:update-visualizer", { code: party?.code, mode: m })}
-              className={`flex-1 py-2 text-xs font-bold rounded-lg uppercase tracking-wider transition-colors border ${party?.visualizerMode === m ? 'bg-party-cyan text-black border-party-cyan' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
+              className={`flex-1 py-2 text-xs font-bold rounded-lg uppercase tracking-wider transition-colors border ${party?.visualizerMode === m ? 'bg-party-cyan text-black border-party-cyan' : 'bg-[var(--theme-glass-bg)] border-[var(--theme-glass-border)] hover:bg-[var(--theme-glass-bg)]'}`}
             >
               {m}
             </button>
@@ -1289,7 +1289,7 @@ const HostDashboard = ({
       {onDownloadHistory && (
         <button 
           onClick={onDownloadHistory}
-          className="w-full py-3 rounded-2xl bg-white/5 hover:bg-white/10 flex items-center justify-center gap-2 transition-colors border border-white/10 font-bold"
+          className="w-full py-3 rounded-2xl bg-[var(--theme-glass-bg)] hover:bg-[var(--theme-glass-bg)] flex items-center justify-center gap-2 transition-colors border border-[var(--theme-glass-border)] font-bold"
         >
           <Download size={18} /> Download History
         </button>
@@ -1361,7 +1361,7 @@ const ListenerView = ({
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-mono text-white/40 px-2.5 py-1 glass rounded-full flex items-center gap-1.5">
+          <span className="text-[11px] font-mono text-theme/ px-2.5 py-1 glass rounded-full flex items-center gap-1.5">
             <Users size={10} className="text-party-cyan" /> {party?.listeners.length ?? 0}
           </span>
           <button onClick={onLeave} className="text-[11px] font-bold px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 flex items-center gap-1.5 transition-all">
@@ -1376,12 +1376,12 @@ const ListenerView = ({
         {/* Album Art */}
         <div className="relative w-64 h-64 sm:w-72 sm:h-72 flex-shrink-0">
           <ReactiveBackground playing={party?.playbackState.playing && !isLocalPaused || false} />
-          <div className="relative z-10 w-full h-full rounded-[36px] overflow-hidden border border-white/10 shadow-2xl">
+          <div className="relative z-10 w-full h-full rounded-[36px] overflow-hidden border border-[var(--theme-glass-border)] shadow-2xl">
             <AnimatePresence mode="wait">
               <motion.div key={party?.currentTrack?.id || 'empty'} initial={{ opacity: 0, scale: 1.05 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4 }} className="w-full h-full">
                 {party?.currentTrack?.coverArt
                   ? <img src={party.currentTrack.coverArt} className="w-full h-full object-cover" alt="" />
-                  : <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-party-violet/10 to-transparent"><Music size={80} className="text-white/10" /></div>
+                  : <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-party-violet/10 to-transparent"><Music size={80} className="text-theme/" /></div>
                 }
               </motion.div>
             </AnimatePresence>
@@ -1397,7 +1397,7 @@ const ListenerView = ({
         {/* Track info */}
         <motion.div key={party?.currentTrack?.id || 'idle'} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="text-center w-full max-w-xs">
           <h2 className="text-xl font-display font-bold truncate mb-1">{party?.currentTrack?.name || 'Waiting for hostâ€¦'}</h2>
-          <p className="text-sm text-white/40 truncate">{party?.currentTrack?.artist || 'Connect & vibe'}</p>
+          <p className="text-sm text-theme/ truncate">{party?.currentTrack?.artist || 'Connect & vibe'}</p>
         </motion.div>
 
         {/* Progress */}
@@ -1432,14 +1432,14 @@ const ListenerView = ({
                 whileHover={{ scale: isMuted ? 1 : 1.12, y: isMuted ? 0 : -2 }}
                 onClick={() => !isMuted && syncEngine.socket.emit('client:reaction', { code: party?.code, type })}
                 disabled={!!isMuted}
-                className={`w-13 h-13 w-[52px] h-[52px] rounded-2xl glass text-2xl flex items-center justify-center transition-all ${isMuted ? 'opacity-20 cursor-not-allowed' : 'hover:bg-white/10'}`}
+                className={`w-13 h-13 w-[52px] h-[52px] rounded-2xl glass text-2xl flex items-center justify-center transition-all ${isMuted ? 'opacity-20 cursor-not-allowed' : 'hover:bg-[var(--theme-glass-bg)]'}`}
               >{emoji}</motion.button>
             );
           })}
 
           <motion.button whileTap={{ scale: 0.9 }} onClick={onToggleLocalPause}
             className={`w-[52px] h-[52px] rounded-2xl flex items-center justify-center transition-all ${
-              isLocalPaused ? 'bg-party-violet shadow-lg shadow-party-violet/40 text-white' : 'glass hover:bg-white/10'
+              isLocalPaused ? 'bg-party-violet shadow-lg shadow-party-violet/40 text-theme' : 'glass hover:bg-[var(--theme-glass-bg)]'
             }`}
           >
             {isLocalPaused ? <Play size={20} /> : <Pause size={20} />}
@@ -1455,12 +1455,12 @@ const ListenerView = ({
         {/* Suggest a Track */}
         <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
           onClick={() => { setShowSuggest(true); setSuggestMsg(null); }}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-sm font-bold transition-all"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-[var(--theme-glass-border)] bg-[var(--theme-glass-bg)] hover:bg-[var(--theme-glass-bg)] text-sm font-bold transition-all"
         >
           <Plus size={14} className="text-party-cyan" /> Suggest a Track
         </motion.button>
 
-        <div className="text-[10px] font-mono text-white/20 tracking-widest">SESSION Â· {party?.code}</div>
+        <div className="text-[10px] font-mono text-theme/ tracking-widest">SESSION Â· {party?.code}</div>
       </div>
 
       {/* â”€â”€â”€ Suggest Track Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
@@ -1478,15 +1478,15 @@ const ListenerView = ({
                 <h3 className="text-base font-display font-bold flex items-center gap-2">
                   <Music size={16} className="text-party-cyan" /> Suggest a Track
                 </h3>
-                <button onClick={() => setShowSuggest(false)} className="text-white/30 hover:text-white p-1"><LogOut size={14} className="rotate-180" /></button>
+                <button onClick={() => setShowSuggest(false)} className="text-theme/ hover:text-theme p-1"><LogOut size={14} className="rotate-180" /></button>
               </div>
-              <p className="text-xs text-white/35 mb-4">Search by song name or artist â€” it'll be added to the host's queue.</p>
+              <p className="text-xs text-theme/ mb-4">Search by song name or artist â€” it'll be added to the host's queue.</p>
 
               <div className="flex gap-2">
                 <div className="relative flex-1">
-                  <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
+                  <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-theme/" />
                   <input autoFocus type="text" placeholder="e.g. Blinding Lightsâ€¦"
-                    className="w-full pl-8 pr-3 py-2.5 text-sm bg-white/5 border border-white/10 rounded-xl focus:border-party-violet outline-none transition-colors"
+                    className="w-full pl-8 pr-3 py-2.5 text-sm bg-[var(--theme-glass-bg)] border border-[var(--theme-glass-border)] rounded-xl focus:border-party-violet outline-none transition-colors"
                     value={suggestQuery}
                     onChange={e => { setSuggestQuery(e.target.value); setSuggestMsg(null); }}
                     onKeyDown={e => e.key === 'Enter' && handleSuggest()}
@@ -1495,7 +1495,7 @@ const ListenerView = ({
                 <button onClick={handleSuggest} disabled={suggestLoading || !suggestQuery.trim()}
                   className="px-4 py-2.5 rounded-xl bg-party-violet hover:bg-party-violet/80 text-sm font-bold disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 transition-all"
                 >
-                  {suggestLoading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><Plus size={14} /> Add</>}
+                  {suggestLoading ? <div className="w-4 h-4 border-2 border-[var(--theme-glass-border)] border-t-[var(--theme-text)] rounded-full animate-spin" /> : <><Plus size={14} /> Add</>}
                 </button>
               </div>
 
@@ -1617,7 +1617,7 @@ const LibraryView = ({
       <div className="max-w-6xl mx-auto flex flex-col h-full">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
            <div>
-             <button onClick={onBack} className="text-white/40 hover:text-white flex items-center gap-2 mb-4">
+             <button onClick={onBack} className="text-theme/ hover:text-theme flex items-center gap-2 mb-4">
                <LogOut size={20} className="rotate-180" /> Back
              </button>
              <h2 className="text-4xl font-display font-bold">Add Music</h2>
@@ -1626,13 +1626,13 @@ const LibraryView = ({
            <div className="flex flex-col w-full gap-2">
              <div className="flex flex-col sm:flex-row gap-4 w-full">
                 <form onSubmit={handleSearchClick} className="flex-1 min-w-[250px] relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-theme/">
                     {(isSearching || isSuggesting) ? <Loader2 size={20} className="animate-spin text-party-violet" /> : <Search size={20} />}
                   </div>
                   <input 
                     type="text" 
                     placeholder="Search music (e.g. 'Chill lo-fi', YouTube URL, or Spotify link)" 
-                    className="w-full pl-12 pr-12 py-3 bg-white/5 border border-white/10 rounded-full focus:border-party-violet outline-none transition-all"
+                    className="w-full pl-12 pr-12 py-3 bg-[var(--theme-glass-bg)] border border-[var(--theme-glass-border)] rounded-full focus:border-party-violet outline-none transition-all"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
@@ -1644,7 +1644,7 @@ const LibraryView = ({
                         exit={{ opacity: 0, scale: 0.8 }}
                         type="submit"
                         disabled={isSearching}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-party-violet flex items-center justify-center text-white disabled:opacity-50 shadow-lg shadow-party-violet/20"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-party-violet flex items-center justify-center text-theme disabled:opacity-50 shadow-lg shadow-party-violet/20"
                       >
                         <Plus size={18} />
                       </motion.button>
@@ -1675,18 +1675,18 @@ const LibraryView = ({
                             setSearchQuery("");
                             setSuggestions([]);
                           }}
-                          className="w-full text-left p-3 hover:bg-white/5 rounded-xl flex items-center gap-3 transition-colors group"
+                          className="w-full text-left p-3 hover:bg-[var(--theme-glass-bg)] rounded-xl flex items-center gap-3 transition-colors group"
                         >
-                          <div className="w-10 h-10 rounded-lg overflow-hidden bg-white/10 flex-shrink-0">
+                          <div className="w-10 h-10 rounded-lg overflow-hidden bg-[var(--theme-glass-bg)] flex-shrink-0">
                             {s.thumbnail ? (
                               <img src={s.thumbnail} className="w-full h-full object-cover" alt="" referrerPolicy="no-referrer" />
                             ) : (
-                              <Music className="w-full h-full p-2 text-white/20" />
+                              <Music className="w-full h-full p-2 text-theme/" />
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="text-sm font-bold truncate group-hover:text-party-violet transition-colors">{s.title}</div>
-                            <div className="text-[10px] text-white/40 truncate">{s.artist}</div>
+                            <div className="text-[10px] text-theme/ truncate">{s.artist}</div>
                           </div>
                         </button>
                       ))}
@@ -1696,7 +1696,7 @@ const LibraryView = ({
 
                 <label className={`btn-primary cursor-pointer flex items-center gap-2 whitespace-nowrap ${uploadStatus.loading ? 'opacity-50 pointer-events-none' : ''}`}>
                   {uploadStatus.loading ? (
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <div className="w-5 h-5 border-2 border-[var(--theme-glass-border)] border-t-[var(--theme-text)] rounded-full animate-spin" />
                   ) : (
                     <Upload size={20} />
                   )}
@@ -1720,47 +1720,47 @@ const LibraryView = ({
                    className="mt-2 p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-2 text-red-400 text-sm font-medium"
                  >
                    <span className="flex-1">{searchError || uploadStatus.error}</span>
-                   <button onClick={() => { setSearchError(null); setUploadStatus(p => ({...p, error: null})); }} className="text-white/40 hover:text-white"><LogOut size={16} className="rotate-45" /></button>
+                   <button onClick={() => { setSearchError(null); setUploadStatus(p => ({...p, error: null})); }} className="text-theme/ hover:text-theme"><LogOut size={16} className="rotate-45" /></button>
                  </motion.div>
                )}
              </AnimatePresence>
            </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 p-4 glass rounded-2xl border border-white/10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 p-4 glass rounded-2xl border border-[var(--theme-glass-border)]">
           <div className="flex-1">
-             <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold mb-2 block">Filter Artist</label>
+             <label className="text-[10px] uppercase tracking-widest text-theme/ font-bold mb-2 block">Filter Artist</label>
              <input 
                type="text" 
                placeholder="Artist name..." 
-               className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm focus:border-party-violet outline-none transition-colors"
+               className="w-full px-3 py-2 bg-[var(--theme-glass-bg)] border border-[var(--theme-glass-border)] rounded-lg text-sm focus:border-party-violet outline-none transition-colors"
                value={filterArtist}
                onChange={e => setFilterArtist(e.target.value)}
              />
           </div>
           <div className="flex-1">
-             <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold mb-2 block">Filter Album</label>
+             <label className="text-[10px] uppercase tracking-widest text-theme/ font-bold mb-2 block">Filter Album</label>
              <input 
                type="text" 
                placeholder="Album name..." 
-               className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm focus:border-party-violet outline-none transition-colors"
+               className="w-full px-3 py-2 bg-[var(--theme-glass-bg)] border border-[var(--theme-glass-border)] rounded-lg text-sm focus:border-party-violet outline-none transition-colors"
                value={filterAlbum}
                onChange={e => setFilterAlbum(e.target.value)}
              />
           </div>
           <div className="flex-1">
-             <label className="text-[10px] uppercase tracking-widest text-white/40 font-bold mb-2 block">Filter Genre</label>
+             <label className="text-[10px] uppercase tracking-widest text-theme/ font-bold mb-2 block">Filter Genre</label>
              <input 
                type="text" 
                placeholder="Genre..." 
-               className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm focus:border-party-violet outline-none transition-colors"
+               className="w-full px-3 py-2 bg-[var(--theme-glass-bg)] border border-[var(--theme-glass-border)] rounded-lg text-sm focus:border-party-violet outline-none transition-colors"
                value={filterGenre}
                onChange={e => setFilterGenre(e.target.value)}
              />
           </div>
           <button 
             onClick={() => { setFilterArtist(""); setFilterAlbum(""); setFilterGenre(""); }}
-            className="col-span-1 sm:col-span-2 lg:col-span-1 px-4 py-2 text-sm font-bold text-white/40 hover:text-white hover:bg-white/5 transition-colors rounded-lg self-end lg:self-center"
+            className="col-span-1 sm:col-span-2 lg:col-span-1 px-4 py-2 text-sm font-bold text-theme/ hover:text-theme hover:bg-[var(--theme-glass-bg)] transition-colors rounded-lg self-end lg:self-center"
           >
             Reset
           </button>
@@ -1787,17 +1787,17 @@ const LibraryView = ({
                   variants={staggerItem}
                   initial="initial"
                   animate="animate"
-                  className="glass-card group flex flex-col border-white/5 hover:border-party-violet/20 h-full"
+                  className="glass-card group flex flex-col border-[var(--theme-glass-border)] hover:border-party-violet/20 h-full"
                 >
-                  <div className="aspect-square rounded-xl bg-white/10 mb-4 overflow-hidden relative flex-shrink-0">
+                  <div className="aspect-square rounded-xl bg-[var(--theme-glass-bg)] mb-4 overflow-hidden relative flex-shrink-0">
                     {track.coverArt ? (
                       <img src={track.coverArt} className="w-full h-full object-cover" />
                     ) : (
-                      <Music className="w-full h-full p-12 text-white/5" />
+                      <Music className="w-full h-full p-12 text-theme/" />
                     )}
                   </div>
                   <h4 className="font-bold truncate text-sm flex-grow">{track.name}</h4>
-                  <p className="text-xs text-white/40 truncate mb-4">{track.artist}</p>
+                  <p className="text-xs text-theme/ truncate mb-4">{track.artist}</p>
                   <div className="grid grid-cols-3 gap-2">
                     <button
                       onClick={() => onPlayTrackNow(track)}
@@ -1808,7 +1808,7 @@ const LibraryView = ({
                     </button>
                     <button
                       onClick={() => onAddToQueue(track)}
-                      className="py-2 px-2 bg-white/10 hover:bg-white/20 text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1"
+                      className="py-2 px-2 bg-[var(--theme-glass-bg)] hover:bg-[var(--theme-glass-bg)] text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1"
                       title="Add to queue"
                     >
                       <Plus size={14} />
@@ -2550,7 +2550,7 @@ export default function App() {
 
   return (
     <div className="relative min-h-screen">
-      <ThreeBackground mode={party?.visualizerMode || "particles"} />
+      <ThreeBackground mode={party?.visualizerMode || "particles"} theme={theme} />
       {party?.currentTrack?.type === 'youtube' && (
         <YouTubePlayer 
           videoId={party.currentTrack.url}

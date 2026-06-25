@@ -35,7 +35,7 @@ function WaveSphere() {
   );
 }
 
-function Particles() {
+function Particles({ theme }: { theme: string }) {
   const count = 1000;
   const positions = useMemo(() => {
     const pos = new Float32Array(count * 3);
@@ -74,7 +74,7 @@ function Particles() {
       </bufferGeometry>
       <pointsMaterial
         size={0.03}
-        color="#ffffff"
+        color={theme === "light" ? "#0A0A0F" : "#ffffff"}
         transparent
         opacity={0.4}
         sizeAttenuation
@@ -151,11 +151,11 @@ function Rings() {
   );
 }
 
-export default function ThreeBackground({ mode = "particles" }: { mode?: string }) {
+export default function ThreeBackground({ mode = "particles", theme = "dark" }: { mode?: string, theme?: string }) {
   return (
     <div className="fixed inset-0 -z-10 pointer-events-none">
       <Canvas camera={{ position: [0, 0, 5], fov: 75 }}>
-        <ambientLight intensity={0.5} />
+        <ambientLight intensity={theme === "light" ? 1 : 0.5} />
         <pointLight position={[10, 10, 10]} intensity={1} color="#7C3AED" />
         <pointLight position={[-10, -10, -10]} intensity={0.5} color="#06B6D4" />
         
@@ -164,14 +164,14 @@ export default function ThreeBackground({ mode = "particles" }: { mode?: string 
             <Float speed={1.5} rotationIntensity={1} floatIntensity={2}>
               <WaveSphere />
             </Float>
-            <Particles />
+            <Particles theme={theme} />
           </>
         )}
         
         {mode === "bars" && <Bars />}
         {mode === "rings" && <Rings />}
         
-        <fog attach="fog" args={["#0A0A0F", 5, 15]} />
+        <fog attach="fog" args={[theme === "light" ? "#F8FAFC" : "#0A0A0F", 5, 15]} />
       </Canvas>
     </div>
   );

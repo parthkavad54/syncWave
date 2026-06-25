@@ -31,6 +31,7 @@
     "howler": "^2.2.4",
     "html5-qrcode": "^2.3.8",
     "ioredis": "^5.11.1",
+    "ioredis-mock": "^8.13.1",
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",
     "multer": "^2.1.1",
