@@ -37,6 +37,7 @@ export interface ChatMessage {
 export interface Party {
   code: string;
   hostId: string | null;
+  hostUserId?: string;
   hostName: string | null;
   listeners: Listener[];
   queue: Track[];

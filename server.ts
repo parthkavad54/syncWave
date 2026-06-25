@@ -37,6 +37,7 @@ async function getParty(code: string) {
   return {
     code,
     hostId: data.hostId,
+    hostUserId: data.hostUserId,
     hostName: data.hostName || "Host",
     currentTrack: data.currentTrack ? JSON.parse(data.currentTrack) : null,
     playbackState: {
@@ -58,6 +59,7 @@ async function getParty(code: string) {
 async function setParty(code: string, party: any) {
   await redis.hset(`syncwave:room:${code}`, {
     hostId: party.hostId || "",
+    hostUserId: party.hostUserId || "",
     hostName: party.hostName || "",
     currentTrack: party.currentTrack ? JSON.stringify(party.currentTrack) : "",
     playing: party.playbackState.playing ? "true" : "false",
@@ -404,6 +406,7 @@ async function startServer() {
       const party = {
         code,
         hostId: socket.id,
+        hostUserId: host_id,
         hostName: host_name,
         listeners: [{ id: socket.id, userId: host_id, name: host_name, device_info: "Host", isMuted: false }],
         queue: [],
@@ -426,7 +429,7 @@ async function startServer() {
       io.to(code).emit("party:update", party);
     });
 
-    socket.on("party:join", async ({ code, listener_id, listener_name }, callback) => {
+    socket.on("party:join", async ({ code, listener_id, listener_name, isHostReclaim }, callback) => {
       if (typeof callback !== "function") return;
       if (!code || typeof code !== "string") {
         callback({ success: false, error: "Invalid session code." });
@@ -453,6 +456,10 @@ async function startServer() {
       const displayName = (listener_name || "").trim() || `Guest ${party.listeners.length + 1}`;
       const newListener = { id: socket.id, userId: listener_id, name: displayName, device_info: "Listener", isMuted: false };
       party.listeners.push(newListener);
+      
+      if (isHostReclaim && party.hostUserId === listener_id) {
+        party.hostId = socket.id;
+      }
 
       await setParty(upperCode, party);
       callback({ success: true });

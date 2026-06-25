@@ -1978,7 +1978,7 @@ export default function App() {
   // Pending join code — stored when user needs to enter name first
   const [pendingJoinCode, setPendingJoinCode] = React.useState<string | null>(null);
 
-  const joinSession = React.useCallback((code: string) => {
+  const joinSession = React.useCallback((code: string, isHostReclaim: boolean = false) => {
     const upperCode = code.toUpperCase().trim();
     if (!upperCode || upperCode.length < 6) {
       setToast("Invalid session code. Please enter a 6-character code.");
@@ -1992,14 +1992,16 @@ export default function App() {
       return;
     }
 
-    setIsHost(false);
-    syncEngine.socket.emit("party:join", { code: upperCode, listener_id: userId, listener_name: userName }, (res: { success: boolean, error?: string }) => {
+    setIsHost(isHostReclaim);
+    syncEngine.socket.emit("party:join", { code: upperCode, listener_id: userId, listener_name: userName, isHostReclaim }, (res: { success: boolean, error?: string }) => {
       if (res.success) {
-        setView("listener");
+        sessionStorage.setItem("syncwave_session", JSON.stringify({ code: upperCode, isHost: isHostReclaim }));
+        setView(isHostReclaim ? "host" : "listener");
         const url = new URL(window.location.href);
         url.searchParams.set("join", upperCode);
         window.history.pushState({}, "", url);
       } else {
+        sessionStorage.removeItem("syncwave_session");
         setToast(res.error || `Session "${upperCode}" not found. Check the code and try again.`);
       }
     });
@@ -2010,11 +2012,13 @@ export default function App() {
       setToast("You have been kicked from the party.");
       setParty(null);
       setView("landing");
+      sessionStorage.removeItem("syncwave_session");
     });
     syncEngine.socket.on("party:banned", () => {
       setToast("You have been banned from this party.");
       setParty(null);
       setView("landing");
+      sessionStorage.removeItem("syncwave_session");
     });
     const handleChat = (message: any) => {
       setParty(p => p ? { ...p, chatMessages: [...(p.chatMessages || []), message] } : null);
@@ -2035,6 +2039,7 @@ export default function App() {
       syncEngine.socket.emit("party:leave", { code: party.code });
       setParty(null);
       setView("landing");
+      sessionStorage.removeItem("syncwave_session");
       const url = new URL(window.location.href);
       url.searchParams.delete("join");
       window.history.pushState({}, "", url);
@@ -2240,8 +2245,28 @@ export default function App() {
 
     const urlParams = new URLSearchParams(window.location.search);
     const joinParam = urlParams.get("join");
+    const savedSession = sessionStorage.getItem("syncwave_session");
+
     if (joinParam && !party) {
-      joinSession(joinParam);
+      let isHostReclaim = false;
+      if (savedSession) {
+         try {
+           const parsed = JSON.parse(savedSession);
+           if (parsed.code === joinParam) {
+             isHostReclaim = parsed.isHost;
+           }
+         } catch (e) {}
+      }
+      joinSession(joinParam, isHostReclaim);
+    } else if (savedSession && !party) {
+      try {
+        const { code, isHost: savedIsHost } = JSON.parse(savedSession);
+        if (code) {
+          joinSession(code, savedIsHost);
+        }
+      } catch (e) {
+        sessionStorage.removeItem("syncwave_session");
+      }
     }
 
     const socket = syncEngine.socket;
@@ -2504,6 +2529,7 @@ export default function App() {
   const createParty = () => {
     setIsHost(true);
     syncEngine.socket.emit("party:create", { host_id: userId, host_name: userName }, (code: string) => {
+      sessionStorage.setItem("syncwave_session", JSON.stringify({ code, isHost: true }));
       setView("host");
     });
   };
