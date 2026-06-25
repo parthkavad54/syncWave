@@ -54,15 +54,15 @@ const SyncStats = () => {
   }, []);
 
   return (
-    <div className="flex items-center gap-3 px-3 py-1 bg-black/20 rounded-full border border-[var(--theme-glass-border)] backdrop-blur-sm">
+    <div className="flex items-center gap-3 px-3 py-1 bg-[var(--theme-glass-bg)] rounded-full border border-[var(--theme-glass-border)] backdrop-blur-sm">
       <div className="flex items-center gap-1.5">
         <Zap size={10} className={stats.rtt < 100 ? "text-green-400" : "text-yellow-400"} />
-        <span className="text-[10px] font-mono text-theme/">{stats.rtt.toFixed(0)}ms</span>
+        <span className="text-[10px] font-mono text-theme/40">{stats.rtt.toFixed(0)}ms</span>
       </div>
       <div className="w-px h-2 bg-[var(--theme-glass-bg)]" />
       <div className="flex items-center gap-1.5">
         <Headphones size={10} className="text-party-violet" />
-        <span className="text-[10px] font-mono text-theme/">{stats.offset > 0 ? "+" : ""}{stats.offset.toFixed(1)}ms</span>
+        <span className="text-[10px] font-mono text-theme/40">{stats.offset > 0 ? "+" : ""}{stats.offset.toFixed(1)}ms</span>
       </div>
     </div>
   );
@@ -351,7 +351,7 @@ const PlaybackProgress = ({
   const progress = getProgressPercent(currentTime, duration);
   return (
     <div className="w-full space-y-2">
-      <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.2em] text-theme/ font-mono">
+      <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.2em] text-theme/40 font-mono">
         <span>{formatTime(currentTime)} / {formatTime(duration)}</span>
         <span>{rightLabel || `${Math.round(progress)}% complete`}</span>
       </div>
@@ -400,7 +400,7 @@ const NamePrompt = ({ onComplete }: { onComplete: (name: string) => void }) => {
         >
           Join the Waves
         </button>
-        <p className="text-theme/ text-sm italic mt-4">Setting your stage name...</p>
+        <p className="text-theme/40 text-sm italic mt-4">Setting your stage name...</p>
       </div>
     </motion.div>
   );
@@ -472,7 +472,7 @@ const Landing = ({
       <h1 className="text-5xl sm:text-7xl font-display font-bold tracking-tighter mb-4 bg-clip-text text-transparent bg-gradient-to-r from-party-violet to-party-cyan">
         SyncWave
       </h1>
-      <p className="text-lg sm:text-xl text-theme/ font-medium px-4">One beat. Every device. All together.</p>
+      <p className="text-lg sm:text-xl text-theme/40 font-medium px-4">One beat. Every device. All together.</p>
     </motion.div>
 
     <div className="grid md:grid-cols-2 gap-6 max-w-4xl w-full">
@@ -486,7 +486,7 @@ const Landing = ({
           <Plus className="text-party-violet" size={32} />
         </div>
         <h2 className="text-3xl font-display font-bold mb-2">Start a Party</h2>
-        <p className="text-theme/">Host a session and broadcast your library to 150+ devices.</p>
+        <p className="text-theme/40">Host a session and broadcast your library to 150+ devices.</p>
       </motion.button>
 
       <motion.button
@@ -499,7 +499,7 @@ const Landing = ({
           <Users className="text-party-cyan" size={32} />
         </div>
         <h2 className="text-3xl font-display font-bold mb-2">Join a Party</h2>
-        <p className="text-theme/">Connect to a live session via QR code or invite code.</p>
+        <p className="text-theme/40">Connect to a live session via QR code or invite code.</p>
       </motion.button>
     </div>
   </div>
@@ -585,7 +585,7 @@ const JoinView = ({ onBack, onJoin }: { onBack: () => void, onJoin: (code: strin
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-party-black/50 overflow-hidden relative">
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-[var(--theme-bg)]/50 overflow-hidden relative">
       {/* Decorative background elements */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden -z-10">
         <motion.div 
@@ -608,7 +608,7 @@ const JoinView = ({ onBack, onJoin }: { onBack: () => void, onJoin: (code: strin
         />
       </div>
 
-      <button onClick={onBack} className="absolute top-8 left-8 text-theme/ hover:text-theme flex items-center gap-2 px-4 py-2 glass rounded-full z-10 transition-all hover:bg-[var(--theme-glass-bg)] group">
+      <button onClick={onBack} className="absolute top-8 left-8 text-theme/40 hover:text-theme flex items-center gap-2 px-4 py-2 glass rounded-full z-10 transition-all hover:bg-[var(--theme-glass-bg)] group">
         <LogOut size={20} className="rotate-180 group-hover:-translate-x-1 transition-transform" /> <span className="hidden sm:inline">Back home</span>
       </button>
 
@@ -624,9 +624,9 @@ const JoinView = ({ onBack, onJoin }: { onBack: () => void, onJoin: (code: strin
                 <QrCodeIcon size={24} className="text-party-violet animate-pulse" />
               </div>
               <h3 className="text-xl font-bold">Scanning...</h3>
-              <p className="text-xs text-theme/">Point your camera at a host's QR code</p>
+              <p className="text-xs text-theme/40">Point your camera at a host's QR code</p>
             </div>
-            <div id="reader" className="w-full aspect-square rounded-[32px] overflow-hidden bg-black/40 border-2 border-[var(--theme-glass-border)] relative">
+            <div id="reader" className="w-full aspect-square rounded-[32px] overflow-hidden bg-[var(--theme-glass-bg)] border-2 border-[var(--theme-glass-border)] relative">
                <div className="absolute inset-0 border-2 border-party-violet/50 rounded-[32px] animate-pulse pointer-events-none" />
             </div>
             <button 
@@ -649,7 +649,7 @@ const JoinView = ({ onBack, onJoin }: { onBack: () => void, onJoin: (code: strin
             </motion.div>
             
             <h2 className="text-4xl font-display font-bold mb-3 tracking-tight">Join the Beat</h2>
-            <p className="text-theme/ mb-10 leading-relaxed px-2 text-sm sm:text-base">Enter the <span className="text-party-violet font-bold">6-character code</span> or scan a host's QR code to synchronize your waves.</p>
+            <p className="text-theme/40 mb-10 leading-relaxed px-2 text-sm sm:text-base">Enter the <span className="text-party-violet font-bold">6-character code</span> or scan a host's QR code to synchronize your waves.</p>
 
             <div className="flex gap-2 sm:gap-4 justify-center mb-10">
               {code.map((char, i) => (
@@ -666,7 +666,7 @@ const JoinView = ({ onBack, onJoin }: { onBack: () => void, onJoin: (code: strin
                     maxLength={1}
                     placeholder="â€¢"
                     value={char}
-                    className={`w-10 sm:w-14 h-14 sm:h-20 bg-[var(--theme-glass-bg)] border ${char ? 'border-party-violet bg-party-violet/5' : 'border-[var(--theme-glass-border)]'} rounded-xl sm:rounded-2xl text-center text-2xl sm:text-4xl font-display font-bold focus:border-party-violet focus:ring-4 focus:ring-party-violet/20 outline-none transition-all placeholder:text-theme/`}
+                    className={`w-10 sm:w-14 h-14 sm:h-20 bg-[var(--theme-glass-bg)] border ${char ? 'border-party-violet bg-party-violet/5' : 'border-[var(--theme-glass-border)]'} rounded-xl sm:rounded-2xl text-center text-2xl sm:text-4xl font-display font-bold focus:border-party-violet focus:ring-4 focus:ring-party-violet/20 outline-none transition-all placeholder:text-theme/40`}
                     onPaste={handlePaste}
                     onChange={(e) => {
                       const val = (e.target as HTMLInputElement).value.toUpperCase().replace(/[^A-Z0-9]/g, "");
@@ -712,13 +712,13 @@ const JoinView = ({ onBack, onJoin }: { onBack: () => void, onJoin: (code: strin
 
             <div className="mt-12 flex items-center gap-4">
               <div className="flex-1 h-px bg-[var(--theme-glass-bg)]"></div>
-              <span className="text-[10px] uppercase tracking-[0.2em] text-theme/ font-bold whitespace-nowrap">Instant Connect</span>
+              <span className="text-[10px] uppercase tracking-[0.2em] text-theme/40 font-bold whitespace-nowrap">Instant Connect</span>
               <div className="flex-1 h-px bg-[var(--theme-glass-bg)]"></div>
             </div>
 
             <button 
               onClick={handleStartScanning}
-              className="mt-8 w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-[var(--theme-glass-bg)] hover:bg-[var(--theme-glass-bg)] transition-all border border-[var(--theme-glass-border)] font-bold text-theme/ hover:text-theme group"
+              className="mt-8 w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-[var(--theme-glass-bg)] hover:bg-[var(--theme-glass-bg)] transition-all border border-[var(--theme-glass-border)] font-bold text-theme/40 hover:text-theme group"
             >
               <QrCodeIcon size={20} className="group-hover:text-party-cyan transition-colors" /> <span className="text-sm">Scan QR Code</span>
             </button>
@@ -766,7 +766,7 @@ const SortableTrackItem = React.memo(({
         <div 
           {...attributes} 
           {...listeners}
-          className="flex items-center px-1 cursor-grab active:cursor-grabbing text-theme/ hover:text-party-violet transition-colors"
+          className="flex items-center px-1 cursor-grab active:cursor-grabbing text-theme/40 hover:text-party-violet transition-colors"
         >
           <GripVertical size={20} />
         </div>
@@ -781,7 +781,7 @@ const SortableTrackItem = React.memo(({
             <div className="mb-1 text-[9px] font-black uppercase tracking-[0.25em] text-party-violet">Now Playing</div>
           )}
           <h4 className="font-bold truncate text-sm">{track.name}</h4>
-          <p className="text-xs text-theme/ truncate">{track.artist}</p>
+          <p className="text-xs text-theme/40 truncate">{track.artist}</p>
         </div>
         
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -831,7 +831,7 @@ const HostNowPlaying = React.memo(({
               <img src={party.currentTrack.coverArt} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-theme/10 to-transparent">
-                <Music size={80} className="text-theme/" />
+                <Music size={80} className="text-theme/40" />
               </div>
             )}
           </motion.div>
@@ -848,14 +848,14 @@ const HostNowPlaying = React.memo(({
       onClick={onTogglePlayback}
     >
       <h2 className="text-3xl font-display font-bold mb-1 truncate w-full">{party?.currentTrack?.name || "Ready to Rock"}</h2>
-      <p className="text-theme/ mb-8">{party?.currentTrack?.artist || "Upload music to begin"}</p>
+      <p className="text-theme/40 mb-8">{party?.currentTrack?.artist || "Upload music to begin"}</p>
     </motion.div>
 
     <div className="flex items-center gap-8 mb-8">
       <motion.button 
         whileTap={{ scale: 0.9 }} 
         onClick={onSkipBackward}
-        className="text-theme/ hover:text-theme"
+        className="text-theme/40 hover:text-theme"
       >
         <SkipBack size={32} />
       </motion.button>
@@ -869,7 +869,7 @@ const HostNowPlaying = React.memo(({
       <motion.button 
         whileTap={{ scale: 0.9 }} 
         onClick={onSkipForward}
-        className="text-theme/ hover:text-theme"
+        className="text-theme/40 hover:text-theme"
       >
         <SkipForward size={32} />
       </motion.button>
@@ -891,7 +891,7 @@ const HostNowPlaying = React.memo(({
         />
       </div>
     </div>
-    <div className="px-4 w-full text-[10px] uppercase tracking-[0.2em] text-theme/ font-mono">
+    <div className="px-4 w-full text-[10px] uppercase tracking-[0.2em] text-theme/40 font-mono">
       <span>{formatTime(currentTime)} / {formatTime(duration)}</span>
     </div>
   </div>
@@ -948,7 +948,7 @@ const HostDashboard = ({
   onDownloadHistory?: () => void
 }) => (
   <div className="min-h-screen grid lg:grid-cols-12 gap-6 p-6">
-    <button onClick={onLeaveParty} className="absolute top-8 left-8 text-theme/ hover:text-theme flex items-center gap-2 px-4 py-2 glass rounded-full z-10 transition-all hover:pl-2">
+    <button onClick={onLeaveParty} className="absolute top-8 left-8 text-theme/40 hover:text-theme flex items-center gap-2 px-4 py-2 glass rounded-full z-10 transition-all hover:pl-2">
       <LogOut size={20} className="rotate-180" /> Leave
     </button>
     {/* Left Column: Now Playing */}
@@ -973,7 +973,7 @@ const HostDashboard = ({
                   <img src={party.currentTrack.coverArt} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-theme/10 to-transparent">
-                    <Music size={80} className="text-theme/" />
+                    <Music size={80} className="text-theme/40" />
                   </div>
                 )}
               </motion.div>
@@ -991,14 +991,14 @@ const HostDashboard = ({
           onClick={onTogglePlayback}
         >
           <h2 className="text-3xl font-display font-bold mb-1 truncate w-full">{party?.currentTrack?.name || "Ready to Rock"}</h2>
-          <p className="text-theme/ mb-8">{party?.currentTrack?.artist || "Upload music to begin"}</p>
+          <p className="text-theme/40 mb-8">{party?.currentTrack?.artist || "Upload music to begin"}</p>
         </motion.div>
 
         <div className="flex items-center gap-8 mb-8">
           <motion.button 
             whileTap={{ scale: 0.9 }} 
             onClick={onSkipBackward}
-            className="text-theme/ hover:text-theme"
+            className="text-theme/40 hover:text-theme"
           >
             <SkipBack size={32} />
           </motion.button>
@@ -1012,7 +1012,7 @@ const HostDashboard = ({
           <motion.button 
             whileTap={{ scale: 0.9 }} 
             onClick={onSkipForward}
-            className="text-theme/ hover:text-theme"
+            className="text-theme/40 hover:text-theme"
           >
             <SkipForward size={32} />
           </motion.button>
@@ -1034,7 +1034,7 @@ const HostDashboard = ({
             />
           </div>
         </div>
-        <div className="px-4 w-full text-[10px] uppercase tracking-[0.2em] text-theme/ font-mono">
+        <div className="px-4 w-full text-[10px] uppercase tracking-[0.2em] text-theme/40 font-mono">
           <span>{formatTime(currentTime)} / {formatTime(duration)}</span>
         </div>
       </div>
@@ -1079,10 +1079,10 @@ const HostDashboard = ({
                         <ReactiveMiniEqualizer playing={party.playbackState.playing} />
                       </div>
                       <h4 className="font-bold truncate text-sm">{party.currentTrack.name}</h4>
-                      <p className="text-xs text-theme/ truncate">{party.currentTrack.artist}</p>
+                      <p className="text-xs text-theme/40 truncate">{party.currentTrack.artist}</p>
                     </div>
                     <div className="text-right flex flex-col items-end">
-                          <span className="text-[10px] font-mono text-theme/">{formatTime(currentTime)} / {formatTime(duration)}</span>
+                          <span className="text-[10px] font-mono text-theme/40">{formatTime(currentTime)} / {formatTime(duration)}</span>
                     </div>
                   </div>
                   <div className="absolute bottom-0 left-0 h-1.5 bg-[var(--theme-glass-bg)] w-full">
@@ -1172,7 +1172,7 @@ const HostDashboard = ({
         >
           <QRCodeSVG value={`${window.location.origin}?join=${party?.code}`} size={160} level="H" />
         </a>
-        <h3 className="text-sm uppercase tracking-[0.2em] text-theme/ font-bold mb-2">Session Code</h3>
+        <h3 className="text-sm uppercase tracking-[0.2em] text-theme/40 font-bold mb-2">Session Code</h3>
         <div className="text-5xl font-display font-black tracking-widest mb-6 bg-clip-text text-transparent bg-gradient-to-r from-party-violet to-party-cyan">
           {party?.code}
         </div>
@@ -1232,7 +1232,7 @@ const HostDashboard = ({
                       {l.name}
                       {l.isMuted && <span className="text-[8px] uppercase px-1 py-0.5 bg-red-500/20 text-red-500 rounded">Muted</span>}
                     </div>
-                    <div className="text-[10px] text-theme/ truncate">{l.id === syncEngine.socket.id ? "(You)" : l.device_info.split("(")[0]}</div>
+                    <div className="text-[10px] text-theme/40 truncate">{l.id === syncEngine.socket.id ? "(You)" : l.device_info.split("(")[0]}</div>
                   </div>
                 </div>
                 
@@ -1240,7 +1240,7 @@ const HostDashboard = ({
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all pt-1 border-t border-[var(--theme-glass-border)]">
                     <button 
                       onClick={() => onMuteListener(l.id, !l.isMuted)}
-                      className={`flex-1 text-[10px] py-1 rounded-md font-bold transition-colors flex items-center justify-center gap-1 ${l.isMuted ? 'bg-party-cyan/20 text-party-cyan' : 'bg-[var(--theme-glass-bg)] text-theme/ hover:bg-[var(--theme-glass-bg)]'}`}
+                      className={`flex-1 text-[10px] py-1 rounded-md font-bold transition-colors flex items-center justify-center gap-1 ${l.isMuted ? 'bg-party-cyan/20 text-party-cyan' : 'bg-[var(--theme-glass-bg)] text-theme/40 hover:bg-[var(--theme-glass-bg)]'}`}
                       title={l.isMuted ? "Unmute" : "Mute"}
                     >
                       {l.isMuted ? <Mic size={10} /> : <MicOff size={10} />}
@@ -1248,7 +1248,7 @@ const HostDashboard = ({
                     </button>
                     <button 
                       onClick={() => onKickListener(l.id)}
-                      className="flex-1 text-[10px] py-1 rounded-md bg-[var(--theme-glass-bg)] text-theme/ hover:bg-red-500/20 hover:text-red-400 font-bold transition-colors flex items-center justify-center gap-1"
+                      className="flex-1 text-[10px] py-1 rounded-md bg-[var(--theme-glass-bg)] text-theme/40 hover:bg-red-500/20 hover:text-red-400 font-bold transition-colors flex items-center justify-center gap-1"
                       title="Kick"
                     >
                       <UserMinus size={10} />
@@ -1256,7 +1256,7 @@ const HostDashboard = ({
                     </button>
                     <button 
                       onClick={() => onBanListener(l.id)}
-                      className="flex-1 text-[10px] py-1 rounded-md bg-[var(--theme-glass-bg)] text-theme/ hover:bg-red-600/20 hover:text-red-500 font-bold transition-colors flex items-center justify-center gap-1"
+                      className="flex-1 text-[10px] py-1 rounded-md bg-[var(--theme-glass-bg)] text-theme/40 hover:bg-red-600/20 hover:text-red-500 font-bold transition-colors flex items-center justify-center gap-1"
                       title="Ban"
                     >
                       <Ban size={10} />
@@ -1278,7 +1278,7 @@ const HostDashboard = ({
             <button 
               key={m}
               onClick={() => syncEngine.socket.emit("party:update-visualizer", { code: party?.code, mode: m })}
-              className={`flex-1 py-2 text-xs font-bold rounded-lg uppercase tracking-wider transition-colors border ${party?.visualizerMode === m ? 'bg-party-cyan text-black border-party-cyan' : 'bg-[var(--theme-glass-bg)] border-[var(--theme-glass-border)] hover:bg-[var(--theme-glass-bg)]'}`}
+              className={`flex-1 py-2 text-xs font-bold rounded-lg uppercase tracking-wider transition-colors border ${party?.visualizerMode === m ? 'bg-party-cyan text-white border-party-cyan' : 'bg-[var(--theme-glass-bg)] border-[var(--theme-glass-border)] hover:bg-[var(--theme-glass-bg)]'}`}
             >
               {m}
             </button>
@@ -1361,7 +1361,7 @@ const ListenerView = ({
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-mono text-theme/ px-2.5 py-1 glass rounded-full flex items-center gap-1.5">
+          <span className="text-[11px] font-mono text-theme/40 px-2.5 py-1 glass rounded-full flex items-center gap-1.5">
             <Users size={10} className="text-party-cyan" /> {party?.listeners.length ?? 0}
           </span>
           <button onClick={onLeave} className="text-[11px] font-bold px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 flex items-center gap-1.5 transition-all">
@@ -1381,7 +1381,7 @@ const ListenerView = ({
               <motion.div key={party?.currentTrack?.id || 'empty'} initial={{ opacity: 0, scale: 1.05 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4 }} className="w-full h-full">
                 {party?.currentTrack?.coverArt
                   ? <img src={party.currentTrack.coverArt} className="w-full h-full object-cover" alt="" />
-                  : <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-party-violet/10 to-transparent"><Music size={80} className="text-theme/" /></div>
+                  : <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-party-violet/10 to-transparent"><Music size={80} className="text-theme/40" /></div>
                 }
               </motion.div>
             </AnimatePresence>
@@ -1397,7 +1397,7 @@ const ListenerView = ({
         {/* Track info */}
         <motion.div key={party?.currentTrack?.id || 'idle'} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="text-center w-full max-w-xs">
           <h2 className="text-xl font-display font-bold truncate mb-1">{party?.currentTrack?.name || 'Waiting for hostâ€¦'}</h2>
-          <p className="text-sm text-theme/ truncate">{party?.currentTrack?.artist || 'Connect & vibe'}</p>
+          <p className="text-sm text-theme/40 truncate">{party?.currentTrack?.artist || 'Connect & vibe'}</p>
         </motion.div>
 
         {/* Progress */}
@@ -1460,14 +1460,14 @@ const ListenerView = ({
           <Plus size={14} className="text-party-cyan" /> Suggest a Track
         </motion.button>
 
-        <div className="text-[10px] font-mono text-theme/ tracking-widest">SESSION Â· {party?.code}</div>
+        <div className="text-[10px] font-mono text-theme/40 tracking-widest">SESSION Â· {party?.code}</div>
       </div>
 
       {/* â”€â”€â”€ Suggest Track Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <AnimatePresence>
         {showSuggest && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+            className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-4 bg-[var(--theme-bg)]/70 backdrop-blur-sm"
             onClick={e => { if (e.target === e.currentTarget) setShowSuggest(false); }}
           >
             <motion.div initial={{ y: 50, scale: 0.96 }} animate={{ y: 0, scale: 1 }} exit={{ y: 50, scale: 0.96 }}
@@ -1478,13 +1478,13 @@ const ListenerView = ({
                 <h3 className="text-base font-display font-bold flex items-center gap-2">
                   <Music size={16} className="text-party-cyan" /> Suggest a Track
                 </h3>
-                <button onClick={() => setShowSuggest(false)} className="text-theme/ hover:text-theme p-1"><LogOut size={14} className="rotate-180" /></button>
+                <button onClick={() => setShowSuggest(false)} className="text-theme/40 hover:text-theme p-1"><LogOut size={14} className="rotate-180" /></button>
               </div>
-              <p className="text-xs text-theme/ mb-4">Search by song name or artist â€” it'll be added to the host's queue.</p>
+              <p className="text-xs text-theme/40 mb-4">Search by song name or artist â€” it'll be added to the host's queue.</p>
 
               <div className="flex gap-2">
                 <div className="relative flex-1">
-                  <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-theme/" />
+                  <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-theme/40" />
                   <input autoFocus type="text" placeholder="e.g. Blinding Lightsâ€¦"
                     className="w-full pl-8 pr-3 py-2.5 text-sm bg-[var(--theme-glass-bg)] border border-[var(--theme-glass-border)] rounded-xl focus:border-party-violet outline-none transition-colors"
                     value={suggestQuery}
@@ -1617,7 +1617,7 @@ const LibraryView = ({
       <div className="max-w-6xl mx-auto flex flex-col h-full">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
            <div>
-             <button onClick={onBack} className="text-theme/ hover:text-theme flex items-center gap-2 mb-4">
+             <button onClick={onBack} className="text-theme/40 hover:text-theme flex items-center gap-2 mb-4">
                <LogOut size={20} className="rotate-180" /> Back
              </button>
              <h2 className="text-4xl font-display font-bold">Add Music</h2>
@@ -1626,7 +1626,7 @@ const LibraryView = ({
            <div className="flex flex-col w-full gap-2">
              <div className="flex flex-col sm:flex-row gap-4 w-full">
                 <form onSubmit={handleSearchClick} className="flex-1 min-w-[250px] relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-theme/">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-theme/40">
                     {(isSearching || isSuggesting) ? <Loader2 size={20} className="animate-spin text-party-violet" /> : <Search size={20} />}
                   </div>
                   <input 
@@ -1681,12 +1681,12 @@ const LibraryView = ({
                             {s.thumbnail ? (
                               <img src={s.thumbnail} className="w-full h-full object-cover" alt="" referrerPolicy="no-referrer" />
                             ) : (
-                              <Music className="w-full h-full p-2 text-theme/" />
+                              <Music className="w-full h-full p-2 text-theme/40" />
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="text-sm font-bold truncate group-hover:text-party-violet transition-colors">{s.title}</div>
-                            <div className="text-[10px] text-theme/ truncate">{s.artist}</div>
+                            <div className="text-[10px] text-theme/40 truncate">{s.artist}</div>
                           </div>
                         </button>
                       ))}
@@ -1720,7 +1720,7 @@ const LibraryView = ({
                    className="mt-2 p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-2 text-red-400 text-sm font-medium"
                  >
                    <span className="flex-1">{searchError || uploadStatus.error}</span>
-                   <button onClick={() => { setSearchError(null); setUploadStatus(p => ({...p, error: null})); }} className="text-theme/ hover:text-theme"><LogOut size={16} className="rotate-45" /></button>
+                   <button onClick={() => { setSearchError(null); setUploadStatus(p => ({...p, error: null})); }} className="text-theme/40 hover:text-theme"><LogOut size={16} className="rotate-45" /></button>
                  </motion.div>
                )}
              </AnimatePresence>
@@ -1729,7 +1729,7 @@ const LibraryView = ({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 p-4 glass rounded-2xl border border-[var(--theme-glass-border)]">
           <div className="flex-1">
-             <label className="text-[10px] uppercase tracking-widest text-theme/ font-bold mb-2 block">Filter Artist</label>
+             <label className="text-[10px] uppercase tracking-widest text-theme/40 font-bold mb-2 block">Filter Artist</label>
              <input 
                type="text" 
                placeholder="Artist name..." 
@@ -1739,7 +1739,7 @@ const LibraryView = ({
              />
           </div>
           <div className="flex-1">
-             <label className="text-[10px] uppercase tracking-widest text-theme/ font-bold mb-2 block">Filter Album</label>
+             <label className="text-[10px] uppercase tracking-widest text-theme/40 font-bold mb-2 block">Filter Album</label>
              <input 
                type="text" 
                placeholder="Album name..." 
@@ -1749,7 +1749,7 @@ const LibraryView = ({
              />
           </div>
           <div className="flex-1">
-             <label className="text-[10px] uppercase tracking-widest text-theme/ font-bold mb-2 block">Filter Genre</label>
+             <label className="text-[10px] uppercase tracking-widest text-theme/40 font-bold mb-2 block">Filter Genre</label>
              <input 
                type="text" 
                placeholder="Genre..." 
@@ -1760,7 +1760,7 @@ const LibraryView = ({
           </div>
           <button 
             onClick={() => { setFilterArtist(""); setFilterAlbum(""); setFilterGenre(""); }}
-            className="col-span-1 sm:col-span-2 lg:col-span-1 px-4 py-2 text-sm font-bold text-theme/ hover:text-theme hover:bg-[var(--theme-glass-bg)] transition-colors rounded-lg self-end lg:self-center"
+            className="col-span-1 sm:col-span-2 lg:col-span-1 px-4 py-2 text-sm font-bold text-theme/40 hover:text-theme hover:bg-[var(--theme-glass-bg)] transition-colors rounded-lg self-end lg:self-center"
           >
             Reset
           </button>
@@ -1793,11 +1793,11 @@ const LibraryView = ({
                     {track.coverArt ? (
                       <img src={track.coverArt} className="w-full h-full object-cover" />
                     ) : (
-                      <Music className="w-full h-full p-12 text-theme/" />
+                      <Music className="w-full h-full p-12 text-theme/40" />
                     )}
                   </div>
                   <h4 className="font-bold truncate text-sm flex-grow">{track.name}</h4>
-                  <p className="text-xs text-theme/ truncate mb-4">{track.artist}</p>
+                  <p className="text-xs text-theme/40 truncate mb-4">{track.artist}</p>
                   <div className="grid grid-cols-3 gap-2">
                     <button
                       onClick={() => onPlayTrackNow(track)}
@@ -1943,7 +1943,7 @@ export default function App() {
   const downloadHistory = () => {
     if (!party) return;
     const history = party.history || [];
-    let content = `VibeSync AI Session History - ${party.code}\nDate: ${new Date().toLocaleString()}\n\n`;
+    let content = `syncWave Session History - ${party.code}\nDate: ${new Date().toLocaleString()}\n\n`;
     
     if (history.length === 0 && !party.currentTrack) {
       content += "No tracks played yet.";
@@ -1960,7 +1960,7 @@ export default function App() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `VibeSync_History_${party.code}.txt`;
+    a.download = `syncWave_History_${party.code}.txt`;
     a.click();
     URL.revokeObjectURL(url);
   };

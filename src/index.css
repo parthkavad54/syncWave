@@ -10,25 +10,29 @@
   --theme-scroll-track: rgba(255, 255, 255, 0.05);
   --theme-scroll-thumb: rgba(255, 255, 255, 0.1);
   --theme-scroll-hover: rgba(255, 255, 255, 0.2);
+  --theme-party-violet: #7C3AED;
+  --theme-party-cyan: #06B6D4;
 }
 
 :root.light-mode {
-  --theme-bg: #F8FAFC;
-  --theme-text: #0F172A;
-  --theme-glass-bg: rgba(255, 255, 255, 0.7);
+  --theme-bg: #E3DED1;
+  --theme-text: #000000;
+  --theme-glass-bg: rgba(255, 255, 255, 0.5);
   --theme-glass-border: rgba(0, 0, 0, 0.1);
   --theme-glass-shadow: rgba(0, 0, 0, 0.05);
   --theme-scroll-track: rgba(0, 0, 0, 0.05);
   --theme-scroll-thumb: rgba(0, 0, 0, 0.2);
   --theme-scroll-hover: rgba(0, 0, 0, 0.3);
+  --theme-party-violet: #4488F6;
+  --theme-party-cyan: #3b82f6;
 }
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Outfit", sans-serif;
   --color-party-black: var(--theme-bg);
-  --color-party-violet: #7C3AED;
-  --color-party-cyan: #06B6D4;
+  --color-party-violet: var(--theme-party-violet);
+  --color-party-cyan: var(--theme-party-cyan);
   --color-theme: var(--theme-text);
   --color-theme-inverse: var(--theme-bg);
 }

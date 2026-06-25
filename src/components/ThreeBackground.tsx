@@ -56,10 +56,11 @@ function Particles({ theme }: { theme: string }) {
     const visualizerData = (window as any).__visualizerData;
     const trebleShift = visualizerData ? visualizerData.trebleShift : 0;
     
-    // Fast rotation when treble is high
-    pointsRef.current.rotation.y = time * (0.03 + trebleShift * 0.2);
+    // Fast rotation when treble is high or simulate it
+    const activeTreble = trebleShift > 0 ? trebleShift : (Math.sin(time) + 1) * 0.5;
+    pointsRef.current.rotation.y = time * (0.03 + activeTreble * 0.2);
     // Vertical oscillation boosted by treble
-    pointsRef.current.position.y = Math.sin(time * 0.5) * 0.2 + (trebleShift * 1.5);
+    pointsRef.current.position.y = Math.sin(time * 0.5) * 0.2 + (activeTreble * 1.5);
   });
 
   return (
@@ -100,7 +101,10 @@ function Bars() {
       const x = Math.cos(angle) * radius;
       const z = Math.sin(angle) * radius;
       
-      const v = data[i] || 0;
+      let v = data[i] || 0;
+      if (v === 0) {
+        v = (Math.sin(time * 4 + i * 0.3) + 1) * 60; // Simulated wave effect
+      }
       const scaleY = 0.1 + (v / 255) * 8;
       
       dummy.position.set(x, scaleY / 2 - 2, z);
@@ -133,7 +137,8 @@ function Rings() {
     groupRef.current.rotation.y = time * 0.1;
 
     groupRef.current.children.forEach((child, i) => {
-      const scale = 1 + (bassScale * 0.2 * (i + 1));
+      const activeBass = bassScale > 0 ? bassScale : (Math.sin(time * 2) + 1) * 0.5;
+      const scale = 1 + (activeBass * 0.2 * (i + 1));
       child.scale.set(scale, scale, scale);
       child.rotation.x = time * 0.5 * (i % 2 === 0 ? 1 : -1);
       child.rotation.y = time * 0.3 * (i % 2 === 0 ? -1 : 1);
