@@ -1,44 +1,71 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
+:root {
+  --theme-bg: #0A0A0F;
+  --theme-text: #FFFFFF;
+  --theme-glass-bg: rgba(255, 255, 255, 0.05);
+  --theme-glass-border: rgba(255, 255, 255, 0.1);
+  --theme-glass-shadow: rgba(0, 0, 0, 0.5);
+  --theme-scroll-track: rgba(255, 255, 255, 0.05);
+  --theme-scroll-thumb: rgba(255, 255, 255, 0.1);
+  --theme-scroll-hover: rgba(255, 255, 255, 0.2);
+}
+
+:root.light-mode {
+  --theme-bg: #F8FAFC;
+  --theme-text: #0F172A;
+  --theme-glass-bg: rgba(255, 255, 255, 0.7);
+  --theme-glass-border: rgba(0, 0, 0, 0.1);
+  --theme-glass-shadow: rgba(0, 0, 0, 0.05);
+  --theme-scroll-track: rgba(0, 0, 0, 0.05);
+  --theme-scroll-thumb: rgba(0, 0, 0, 0.2);
+  --theme-scroll-hover: rgba(0, 0, 0, 0.3);
+}
+
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Outfit", sans-serif;
-  --color-party-black: #0A0A0F;
+  --color-party-black: var(--theme-bg);
   --color-party-violet: #7C3AED;
   --color-party-cyan: #06B6D4;
 }
 
 @layer base {
   body {
-    @apply bg-party-black text-white font-sans overflow-x-hidden;
+    background-color: var(--theme-bg);
+    color: var(--theme-text);
+    @apply font-sans overflow-x-hidden transition-colors duration-500;
   }
 }
 
 @layer components {
   .glass {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--theme-glass-bg);
     backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--theme-glass-border);
     border-radius: 20px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 25px 50px -12px var(--theme-glass-shadow);
   }
   
   .glass-card {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--theme-glass-bg);
     backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--theme-glass-border);
     border-radius: 20px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 25px 50px -12px var(--theme-glass-shadow);
     @apply p-6 transition-all duration-300;
   }
 
   .btn-primary {
-    @apply px-8 py-3 rounded-full bg-gradient-to-r from-party-violet to-party-cyan font-display font-bold text-lg hover:scale-105 active:scale-95 transition-transform;
+    @apply px-8 py-3 rounded-full bg-gradient-to-r from-party-violet to-party-cyan font-display font-bold text-lg hover:scale-105 active:scale-95 transition-transform text-white;
   }
 
   .input-code {
-    @apply w-10 h-14 sm:w-12 sm:h-16 text-center text-2xl sm:text-3xl font-bold bg-white/10 border border-white/20 rounded-xl focus:outline-none focus:border-party-violet transition-colors uppercase;
+    @apply w-10 h-14 sm:w-12 sm:h-16 text-center text-2xl sm:text-3xl font-bold rounded-xl focus:outline-none focus:border-party-violet transition-colors uppercase;
+    background: var(--theme-glass-bg);
+    border: 1px solid var(--theme-glass-border);
+    color: var(--theme-text);
   }
 }
 
@@ -56,12 +83,12 @@
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--theme-scroll-track);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--theme-scroll-thumb);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--theme-scroll-hover);
 }

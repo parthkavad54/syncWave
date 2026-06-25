@@ -100,6 +100,10 @@ class AudioEngine {
     }
   }
 
+  public setVolume(vol: number) {
+    Howler.volume(vol);
+  }
+
   // ── Core play / pause / stop ───────────────────────────────────────────────
   /**
    * Play a track. If the track is already loaded, just seek + resume.

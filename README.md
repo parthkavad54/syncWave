@@ -1,10 +1,10 @@
-# SyncWave: Collaborative Party Session System
+# VibeSync AI: Collaborative Party Session System
 
-SyncWave is a modern, full-stack web application designed to solve the chaos of music management at gatherings. It allows a host to create a party room where guests can join, suggest music via AI-powered search, and influence the session in real time.
+VibeSync AI is a modern, full-stack web application designed to solve the chaos of music management at gatherings. It allows a host to create a "Party Room" where guests can join, suggest music via AI-powered search, and influence the environment's "Vibe" in real-time.
 
 ## 🚀 The Problem We Solve
 
-In traditional party settings, one person usually controls the aux cord, or guests shout requests that get forgotten. **SyncWave** provides:
+In traditional party settings, one person usually controls the aux cord, or guests shout requests that get forgotten. **VibeSync AI** provides:
 - **Collaborative Queue Control**: Guests can add tracks to a shared queue without sharing a physical device.
 - **AI-Powered Discovery**: Use natural language (e.g., "Chill evening lo-fi") to find music immediately via Gemini AI integration.
 - **Environmental Immersion**: Interactive 3D backgrounds and "Ambient Vibes" (Rain, Fire, Forest, etc.) that sync across all connected devices.
@@ -46,17 +46,8 @@ In traditional party settings, one person usually controls the aux cord, or gues
    Create a `.env` file in the root directory (using `.env.example` as a template):
    ```env
    GEMINI_API_KEY=your_gemini_api_key_here
-   YOUTUBE_API_KEY=your_youtube_api_key_here
-   FIREBASE_PROJECT_ID=your-firebase-project-id
-   FIREBASE_STORAGE_BUCKET=your-project.firebasestorage.app
    ```
-
-3. **Firebase Configuration**:
-   Copy `firebase-applet-config.example.json` to `firebase-applet-config.json` and fill in your Firebase project details from [Firebase Console](https://console.firebase.google.com):
-   ```bash
-   cp firebase-applet-config.example.json firebase-applet-config.json
-   ```
-   ⚠️ **Important**: Never commit `firebase-applet-config.json` to version control. It contains sensitive credentials and is already in `.gitignore`. Treat it like a password.
+   *Note: Ensure your `firebase-applet-config.json` is present with your Firebase credentials.*
 
 3. **Database Rules**:
    Deploy the Firestore security rules provided in `firestore.rules` to ensure the party system is secure.
@@ -83,5 +74,3 @@ In traditional party settings, one person usually controls the aux cord, or gues
 - **Glassmorphism UI**: A technical yet elegant interface built for dark-room party environments.
 
 ---
-
-Built for shared listening and live session control.

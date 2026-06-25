@@ -1,0 +1,404 @@
+const HostDashboard = ({ 
+  party, 
+  userName, 
+  duration, 
+  currentTime, 
+  onTogglePlayback, 
+  onSeek, 
+  onLeaveParty, 
+  onLibraryView,
+  onPlaylistsView,
+  onKickListener,
+  onMuteListener,
+  onBanListener,
+  onRemoveFromQueue,
+  onMoveInQueue,
+  onReorderQueue,
+  onClearQueue,
+  onPlayTrack,
+  onSkipForward,
+  onSkipBackward,
+  onShowToast,
+  onDownloadHistory
+}: { 
+  party: Party | null, 
+  userName: string, 
+  duration: number, 
+  currentTime: number, 
+  onTogglePlayback: () => void, 
+  onSeek: (e: React.ChangeEvent<HTMLInputElement>) => void, 
+  onLeaveParty: () => void, 
+  onLibraryView: () => void,
+  onPlaylistsView: () => void,
+  onKickListener: (id: string) => void,
+  onMuteListener: (id: string, muted: boolean) => void,
+  onBanListener: (id: string) => void,
+  onRemoveFromQueue: (id: string) => void,
+  onMoveInQueue: (id: string, direction: 'up' | 'down') => void,
+  onReorderQueue: (newQueue: Track[]) => void,
+  onClearQueue: () => void,
+  onPlayTrack: (track: Track) => void,
+  onSkipForward: () => void,
+  onSkipBackward: () => void,
+  onShowToast: (msg: string) => void,
+  onDownloadHistory?: () => void
+}) => (
+  <div className="min-h-screen grid lg:grid-cols-12 gap-6 p-6">
+    <button onClick={onLeaveParty} className="absolute top-8 left-8 text-white/40 hover:text-white flex items-center gap-2 px-4 py-2 glass rounded-full z-10 transition-all hover:pl-2">
+      <LogOut size={20} className="rotate-180" /> Leave
+    </button>
+    {/* Left Column: Now Playing */}
+    <div className="lg:col-span-4 space-y-6">
+      <div className="glass-card h-full flex flex-col items-center justify-center text-center">
+        <div className="mb-4">
+           <span className="px-3 py-1 bg-party-violet/20 text-party-violet rounded-full text-xs font-bold font-mono">HOST: {userName}</span>
+        </div>
+        <div className="relative mb-8 group">
+          <div className="absolute -inset-4 bg-gradient-to-r from-party-violet to-party-cyan rounded-full opacity-20 blur-2xl group-hover:opacity-40 transition-opacity"></div>
+          <div className="w-64 h-64 rounded-3xl bg-white/5 overflow-hidden border border-white/10 relative z-10">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={party?.currentTrack?.id || "empty"}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.1 }}
+                transition={{ duration: 0.5, ease: "easeInOut" }}
+                className="w-full h-full"
+              >
+                {party?.currentTrack?.coverArt ? (
+                  <img src={party.currentTrack.coverArt} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-white/10 to-transparent">
+                    <Music size={80} className="text-white/20" />
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+          {/* Animated Speaker Rings */}
+          <ReactiveRings playing={party?.playbackState.playing || false} />
+        </div>
+
+        <motion.div
+          key={party?.currentTrack?.id || "empty-text"}
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="w-full text-center cursor-pointer"
+          onClick={onTogglePlayback}
+        >
+          <h2 className="text-3xl font-display font-bold mb-1 truncate w-full">{party?.currentTrack?.name || "Ready to Rock"}</h2>
+          <p className="text-white/40 mb-8">{party?.currentTrack?.artist || "Upload music to begin"}</p>
+        </motion.div>
+
+        <div className="flex items-center gap-8 mb-8">
+          <motion.button 
+            whileTap={{ scale: 0.9 }} 
+            onClick={onSkipBackward}
+            className="text-white/60 hover:text-white"
+          >
+            <SkipBack size={32} />
+          </motion.button>
+          <motion.button 
+            whileTap={{ scale: 0.9 }}
+            onClick={onTogglePlayback}
+            className="w-20 h-20 rounded-full bg-white text-party-black flex items-center justify-center shadow-[0_0_30px_rgba(255,255,255,0.3)]"
+          >
+            {party?.playbackState.playing ? <Pause size={36} fill="currentColor" /> : <Play size={36} fill="currentColor" className="ml-1" />}
+          </motion.button>
+          <motion.button 
+            whileTap={{ scale: 0.9 }} 
+            onClick={onSkipForward}
+            className="text-white/60 hover:text-white"
+          >
+            <SkipForward size={32} />
+          </motion.button>
+        </div>
+
+        <div className="w-full relative mb-2 flex items-center px-4">
+          <input 
+            type="range"
+            min={0}
+            max={duration || 1}
+            value={currentTime}
+            onChange={onSeek}
+            className="w-full h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer accent-party-violet"
+          />
+          <div className="absolute top-0 left-4 right-4 h-1.5 bg-white/10 rounded-full pointer-events-none overflow-hidden">
+            <div 
+              className="h-full bg-gradient-to-r from-party-violet to-party-cyan rounded-full transition-[width] duration-300 ease-linear"
+              style={{ width: `${getProgressPercent(currentTime, duration)}%` }}
+            />
+          </div>
+        </div>
+        <div className="px-4 w-full text-[10px] uppercase tracking-[0.2em] text-white/40 font-mono">
+          <span>{formatTime(currentTime)} / {formatTime(duration)}</span>
+        </div>
+      </div>
+    </div>
+
+    {/* Middle Column: Queue & Library */}
+    <div className="lg:col-span-5 flex flex-col gap-6">
+      <div className="glass-card flex-1 flex flex-col p-0 overflow-hidden">
+        <div className="p-6 border-bottom border-white/10 flex justify-between items-center">
+          <h3 className="text-xl font-bold flex items-center gap-2">
+            <Music size={20} className="text-party-violet" />
+            Music Queue
+          </h3>
+          <button 
+            onClick={onClearQueue}
+            className="text-[10px] uppercase tracking-widest text-red-400 font-bold hover:text-red-300 transition-colors"
+          >
+            Clear Queue
+          </button>
+        </div>
+        <div className="flex-1 p-2 min-h-[400px] flex flex-col">
+          {party?.queue.length === 0 && !party?.currentTrack ? (
+            <div className="flex-1 flex flex-col items-center justify-center opacity-20 py-12">
+              <Music size={48} className="mb-4" />
+              <p>Queue is empty</p>
+            </div>
+          ) : (
+            <div className="flex-1 flex flex-col">
+              {party?.currentTrack && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-3 mb-4 rounded-2xl bg-party-violet/10 border border-party-violet/20 relative overflow-hidden group shadow-lg shadow-party-violet/5"
+                >
+                  <div className="flex items-center gap-3 relative z-10">
+                    <div className="w-12 h-12 rounded-xl bg-white/10 flex-shrink-0 flex items-center justify-center overflow-hidden border border-white/5">
+                      {party.currentTrack.coverArt ? <img src={party.currentTrack.coverArt} className="w-full h-full object-cover" /> : <Music size={16} />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="text-[10px] font-black text-party-violet uppercase tracking-[0.2em]">Now Playing</span>
+                        <ReactiveMiniEqualizer playing={party.playbackState.playing} />
+                      </div>
+                      <h4 className="font-bold truncate text-sm">{party.currentTrack.name}</h4>
+                      <p className="text-xs text-white/40 truncate">{party.currentTrack.artist}</p>
+                    </div>
+                    <div className="text-right flex flex-col items-end">
+                          <span className="text-[10px] font-mono text-white/40">{formatTime(currentTime)} / {formatTime(duration)}</span>
+                    </div>
+                  </div>
+                  <div className="absolute bottom-0 left-0 h-1.5 bg-white/5 w-full">
+                         <div 
+                           className="h-full bg-gradient-to-r from-party-violet to-party-cyan transition-[width] duration-300 ease-linear"
+                           style={{ width: `${getProgressPercent(currentTime, duration)}%` }}
+                         />
+                  </div>
+                </motion.div>
+              )}
+
+              <div className="flex-1">
+                <DndContext 
+                  sensors={useSensors(
+                    useSensor(PointerSensor, {
+                      activationConstraint: {
+                        distance: 5,
+                      },
+                    }),
+                    useSensor(KeyboardSensor, {
+                      coordinateGetter: sortableKeyboardCoordinates,
+                    })
+                  )}
+                  collisionDetection={closestCenter}
+                  onDragEnd={(event: DragEndEvent) => {
+                    const { active, over } = event;
+                    if (over && active.id !== over.id) {
+                      const oldIndex = party?.queue.findIndex(t => t.id === active.id);
+                      const newIndex = party?.queue.findIndex(t => t.id === over.id);
+                      if (oldIndex !== undefined && newIndex !== undefined && oldIndex !== -1 && newIndex !== -1) {
+                         const newQueue = arrayMove(party!.queue, oldIndex, newIndex);
+                         onReorderQueue(newQueue);
+                      }
+                    }
+                  }}
+                  modifiers={[restrictToVerticalAxis]}
+                >
+                  <SortableContext 
+                    items={party?.queue.map(t => t.id) || []}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <Virtuoso
+                      style={{ height: '420px' }}
+                      data={party?.queue || []}
+                      className="scrollbar-hide"
+                      itemContent={(index, track) => (
+                        <SortableTrackItem 
+                          key={track.id}
+                          track={track}
+                          isCurrent={party?.currentTrack?.id === track.id}
+                          onPlayTrack={onPlayTrack}
+                          onRemoveFromQueue={onRemoveFromQueue}
+                        />
+                      )}
+                    />
+                  </SortableContext>
+                </DndContext>
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="p-4 bg-white/5 grid grid-cols-2 gap-2">
+          <button 
+            onClick={onLibraryView}
+            className="py-3 rounded-xl bg-white/10 hover:bg-white/20 font-bold transition-colors flex items-center justify-center gap-2 text-sm"
+          >
+            <Plus size={18} /> Library
+          </button>
+          <button 
+            onClick={onPlaylistsView}
+            className="py-3 rounded-xl bg-party-violet/20 hover:bg-party-violet/30 text-party-violet font-bold transition-colors flex items-center justify-center gap-2 text-sm"
+          >
+            <Headphones size={18} /> Playlists
+          </button>
+        </div>
+      </div>
+    </div>
+
+    {/* Right Column: Session Info */}
+    <div className="lg:col-span-3 space-y-6">
+      <div className="glass-card text-center">
+        <a 
+          href={`${window.location.origin}?join=${party?.code}`}
+          target="_blank"
+          rel="noreferrer"
+          className="bg-white p-4 rounded-3xl inline-block mb-6 shadow-2xl hover:scale-105 transition-transform"
+        >
+          <QRCodeSVG value={`${window.location.origin}?join=${party?.code}`} size={160} level="H" />
+        </a>
+        <h3 className="text-sm uppercase tracking-[0.2em] text-white/40 font-bold mb-2">Session Code</h3>
+        <div className="text-5xl font-display font-black tracking-widest mb-6 bg-clip-text text-transparent bg-gradient-to-r from-party-violet to-party-cyan">
+          {party?.code}
+        </div>
+        <button 
+           onClick={() => {
+             const inviteLink = `${window.location.origin}?join=${party?.code}`;
+             if (navigator.clipboard && navigator.clipboard.writeText) {
+               navigator.clipboard.writeText(inviteLink)
+                 .then(() => onShowToast("Invite link copied to clipboard!"))
+                 .catch(() => onShowToast("Failed to copy link."));
+             } else {
+               // Fallback
+               const textArea = document.createElement("textarea");
+               textArea.value = inviteLink;
+               document.body.appendChild(textArea);
+               textArea.select();
+               try {
+                 document.execCommand('copy');
+                 onShowToast("Invite link copied to clipboard!");
+               } catch (err) {
+                 onShowToast("Failed to copy link: " + inviteLink);
+               }
+               document.body.removeChild(textArea);
+             }
+           }}
+           className="flex items-center gap-2 mx-auto px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 text-xs font-bold transition-all"
+        >
+          <Share2 size={14} /> Copy Invite Link
+        </button>
+      </div>
+
+      <div className="glass-card">
+         <div className="flex justify-between items-center mb-4">
+           <h3 className="text-lg font-bold flex items-center gap-2">
+             <Users size={20} className="text-party-cyan" />
+             Listeners
+           </h3>
+           <div className="flex items-center gap-2">
+             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+             <span className="font-mono">{party?.listeners.length}</span>
+           </div>
+         </div>
+         <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
+            {party?.listeners.map((l, i) => (
+              <div key={`${l.id}-${i}`} className="flex flex-col gap-2 p-3 rounded-xl bg-white/5 border border-white/5 group relative overflow-hidden transition-all hover:bg-white/10">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-party-cyan/20 flex items-center justify-center relative">
+                    <Headphones size={14} className="text-party-cyan" />
+                    {l.isMuted && (
+                      <div className="absolute -top-1 -right-1 bg-red-500 rounded-full p-0.5">
+                        <MicOff size={8} className="text-white" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs truncate font-bold flex items-center gap-2">
+                      {l.name}
+                      {l.isMuted && <span className="text-[8px] uppercase px-1 py-0.5 bg-red-500/20 text-red-500 rounded">Muted</span>}
+                    </div>
+                    <div className="text-[10px] text-white/30 truncate">{l.id === syncEngine.socket.id ? "(You)" : l.device_info.split("(")[0]}</div>
+                  </div>
+                </div>
+                
+                {l.id !== syncEngine.socket.id && (
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all pt-1 border-t border-white/5">
+                    <button 
+                      onClick={() => onMuteListener(l.id, !l.isMuted)}
+                      className={`flex-1 text-[10px] py-1 rounded-md font-bold transition-colors flex items-center justify-center gap-1 ${l.isMuted ? 'bg-party-cyan/20 text-party-cyan' : 'bg-white/5 text-white/40 hover:bg-white/10'}`}
+                      title={l.isMuted ? "Unmute" : "Mute"}
+                    >
+                      {l.isMuted ? <Mic size={10} /> : <MicOff size={10} />}
+                      {l.isMuted ? "Unmute" : "Mute"}
+                    </button>
+                    <button 
+                      onClick={() => onKickListener(l.id)}
+                      className="flex-1 text-[10px] py-1 rounded-md bg-white/5 text-white/40 hover:bg-red-500/20 hover:text-red-400 font-bold transition-colors flex items-center justify-center gap-1"
+                      title="Kick"
+                    >
+                      <UserMinus size={10} />
+                      Kick
+                    </button>
+                    <button 
+                      onClick={() => onBanListener(l.id)}
+                      className="flex-1 text-[10px] py-1 rounded-md bg-white/5 text-white/40 hover:bg-red-600/20 hover:text-red-500 font-bold transition-colors flex items-center justify-center gap-1"
+                      title="Ban"
+                    >
+                      <Ban size={10} />
+                      Ban
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+         </div>
+      </div>
+
+      <div className="glass-card">
+        <div className="flex items-center justify-between mb-3">
+          <span className="font-semibold text-sm opacity-80">Visualizer Mode</span>
+        </div>
+        <div className="flex gap-2">
+          {['particles', 'bars', 'rings'].map(m => (
+            <button 
+              key={m}
+              onClick={() => syncEngine.socket.emit("party:update-visualizer", { code: party?.code, mode: m })}
+              className={`flex-1 py-2 text-xs font-bold rounded-lg uppercase tracking-wider transition-colors border ${party?.visualizerMode === m ? 'bg-party-cyan text-black border-party-cyan' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
+            >
+              {m}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {onDownloadHistory && (
+        <button 
+          onClick={onDownloadHistory}
+          className="w-full py-3 rounded-2xl bg-white/5 hover:bg-white/10 flex items-center justify-center gap-2 transition-colors border border-white/10 font-bold"
+        >
+          <Download size={18} /> Download History
+        </button>
+      )}
+
+      <button 
+        onClick={onLeaveParty}
+        className="w-full py-4 rounded-2xl bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold transition-colors flex items-center justify-center gap-2"
+      >
+        <LogOut size={20} /> End Party
+      </button>
+    </div>
+  </div>
+);
+
+const ListenerView = ({ 

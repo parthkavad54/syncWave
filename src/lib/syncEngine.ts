@@ -1,57 +1,43 @@
 import { io, Socket } from "socket.io-client";
+import parser from "socket.io-msgpack-parser";
 
 class SyncEngine {
   public socket: Socket;
   public offset: number = 0;
   public rtt: number = 0;
-  private syncInterval: any;
-  private offsetHistory: { offset: number; rtt: number }[] = [];
+  private worker: Worker | null = null;
 
   constructor() {
     const socketUrl = import.meta.env.VITE_API_URL || "";
 
+    // Main thread socket for UI and Party events (with msgpack)
     this.socket = io(socketUrl, {
       reconnection: true,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
       reconnectionAttempts: 10,
       transports: ["websocket", "polling"],
+      parser,
     });
 
-    this.startSync();
+    this.startWorkerSync(socketUrl);
   }
 
-  private startSync() {
-    const doSync = () => {
-      const t1 = Date.now();
-      this.socket.emit("clock:ping", t1);
-    };
+  private startWorkerSync(socketUrl: string) {
+    this.worker = new Worker(new URL('./syncWorker.ts', import.meta.url), { type: 'module' });
+    
+    // Provide absolute URL since import.meta.env.VITE_API_URL could be relative (e.g. "")
+    const absoluteUrl = socketUrl || window.location.origin;
 
-    this.socket.on("clock:pong", ({ t1, t2, t3 }) => {
-      const t4 = Date.now();
-      const currentRTT = (t4 - t1) - (t3 - t2);
-      const currentOffset = ((t2 - t1) + (t3 - t4)) / 2;
+    this.worker.postMessage({ type: "INIT", payload: { socketUrl: absoluteUrl } });
 
-      this.offsetHistory.push({ offset: currentOffset, rtt: currentRTT });
-      if (this.offsetHistory.length > 30) this.offsetHistory.shift();
-
-      // Use the bottom 33% RTT samples (cleanest network paths)
-      const sorted = [...this.offsetHistory].sort((a, b) => a.rtt - b.rtt);
-      const best = sorted.slice(0, Math.max(1, Math.floor(sorted.length * 0.33)));
-      this.offset = best.reduce((sum, s) => sum + s.offset, 0) / best.length;
-      this.rtt = currentRTT;
-    });
-
-    // Do 15 rapid pings on startup for faster convergence
-    const runInitialSync = async () => {
-      for (let i = 0; i < 15; i++) {
-        doSync();
-        await new Promise((r) => setTimeout(r, 100));
+    this.worker.onmessage = (e) => {
+      const { type, offset, rtt } = e.data;
+      if (type === "SYNC_UPDATE") {
+        this.offset = offset;
+        this.rtt = rtt;
       }
     };
-
-    runInitialSync();
-    this.syncInterval = setInterval(doSync, 3000);
   }
 
   /** Server-corrected wall clock in ms */
@@ -64,17 +50,19 @@ class SyncEngine {
    * that SHOULD be playing right now.
    */
   public getExpectedPosition(
-    positionMs: number,
-    timestampMs: number,
+    startedAtServerTime: number,
+    pausedPosition: number | undefined,
     playing: boolean
   ): number {
-    if (!playing) return positionMs / 1000;
-    const elapsed = Math.max(0, this.getCorrectedTime() - timestampMs);
-    return (positionMs + elapsed) / 1000;
+    if (!playing) return (pausedPosition || 0) / 1000;
+    return (this.getCorrectedTime() - startedAtServerTime) / 1000;
   }
 
   public destroy() {
-    if (this.syncInterval) clearInterval(this.syncInterval);
+    if (this.worker) {
+      this.worker.postMessage({ type: "DESTROY" });
+      this.worker.terminate();
+    }
     this.socket.disconnect();
   }
 }

@@ -13,9 +13,9 @@ export interface Track {
 
 export interface PlaybackState {
   playing: boolean;
-  position: number;
-  timestamp: number;
-  scheduledStartTime?: number | null;
+  startedAtServerTime: number; // Anchor point on the server timeline
+  pausedPosition?: number;     // Absolute position (ms) if currently paused
+  playbackRate?: number;
 }
 
 export interface Listener {
@@ -26,12 +26,21 @@ export interface Listener {
   isMuted?: boolean;
 }
 
+export interface ChatMessage {
+  id: string;
+  userId: string;
+  name: string;
+  text: string;
+  timestamp: number;
+}
+
 export interface Party {
   code: string;
   hostId: string | null;
   hostName: string | null;
   listeners: Listener[];
   queue: Track[];
+  history?: Track[];
   currentTrack: Track | null;
   playbackState: PlaybackState;
   bannedIds: string[];
@@ -39,6 +48,8 @@ export interface Party {
     id: string;
     volume: number;
   } | null;
+  visualizerMode?: string;
+  chatMessages?: ChatMessage[];
 }
 
 export interface SyncData {

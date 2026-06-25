@@ -9,6 +9,8 @@ import fs from "fs";
 import { fileURLToPath } from "url";
 import multer from "multer";
 import { nanoid } from "nanoid";
+import Redis from "ioredis";
+import parser from "socket.io-msgpack-parser";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -17,6 +19,81 @@ const __dirname = path.dirname(__filename);
 const uploadsDir = path.join(__dirname, "public", "uploads");
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+const redis = new Redis(process.env.REDIS_URL || "redis://127.0.0.1:6379");
+
+async function getParty(code: string) {
+  const data = await redis.hgetall(`syncwave:room:${code}`);
+  if (!data || !data.hostId) return null;
+  
+  const queue = await redis.lrange(`syncwave:room:${code}:queue`, 0, -1);
+  const history = await redis.lrange(`syncwave:room:${code}:history`, 0, -1);
+  const chatMessages = await redis.lrange(`syncwave:room:${code}:chat`, 0, -1);
+  
+  return {
+    code,
+    hostId: data.hostId,
+    hostName: data.hostName || "Host",
+    currentTrack: data.currentTrack ? JSON.parse(data.currentTrack) : null,
+    playbackState: {
+      playing: data.playing === "true",
+      startedAtServerTime: parseInt(data.startedAtServerTime || "0", 10),
+      pausedPosition: parseInt(data.pausedPosition || "0", 10),
+      playbackRate: parseFloat(data.playbackRate || "1")
+    },
+    queue: queue.map(t => JSON.parse(t)),
+    history: history.map(t => JSON.parse(t)),
+    chatMessages: chatMessages.map(m => JSON.parse(m)),
+    listeners: data.listeners ? JSON.parse(data.listeners) : [],
+    bannedIds: data.bannedIds ? JSON.parse(data.bannedIds) : [],
+    ambientVibe: data.ambientVibe ? JSON.parse(data.ambientVibe) : null,
+    visualizerMode: data.visualizerMode || "particles"
+  };
+}
+
+async function setParty(code: string, party: any) {
+  await redis.hset(`syncwave:room:${code}`, {
+    hostId: party.hostId || "",
+    hostName: party.hostName || "",
+    currentTrack: party.currentTrack ? JSON.stringify(party.currentTrack) : "",
+    playing: party.playbackState.playing ? "true" : "false",
+    startedAtServerTime: party.playbackState.startedAtServerTime.toString(),
+    pausedPosition: (party.playbackState.pausedPosition || 0).toString(),
+    playbackRate: (party.playbackState.playbackRate || 1).toString(),
+    listeners: JSON.stringify(party.listeners || []),
+    bannedIds: JSON.stringify(party.bannedIds || []),
+    ambientVibe: party.ambientVibe ? JSON.stringify(party.ambientVibe) : "",
+    visualizerMode: party.visualizerMode || "particles"
+  });
+  
+  // Update queue
+  const queueKey = `syncwave:room:${code}:queue`;
+  await redis.del(queueKey);
+  if (party.queue && party.queue.length > 0) {
+    await redis.rpush(queueKey, ...party.queue.map((t: any) => JSON.stringify(t)));
+  }
+
+  // Update history
+  const historyKey = `syncwave:room:${code}:history`;
+  await redis.del(historyKey);
+  if (party.history && party.history.length > 0) {
+    await redis.rpush(historyKey, ...party.history.map((t: any) => JSON.stringify(t)));
+  }
+
+  // Update chat
+  const chatKey = `syncwave:room:${code}:chat`;
+  await redis.del(chatKey);
+  if (party.chatMessages && party.chatMessages.length > 0) {
+    await redis.rpush(chatKey, ...party.chatMessages.map((m: any) => JSON.stringify(m)));
+  }
+}
+
+async function deleteParty(code: string) {
+  await redis.del(`syncwave:room:${code}`);
+  await redis.del(`syncwave:room:${code}:queue`);
+  await redis.del(`syncwave:room:${code}:history`);
+  await redis.del(`syncwave:room:${code}:chat`);
 }
 
 async function startServer() {
@@ -50,6 +127,7 @@ async function startServer() {
   const httpServer = createServer(app);
   const io = new Server(httpServer, {
     transports: ['websocket', 'polling'],
+    parser,
     cors: {
       origin: allowedOrigins,
       methods: ["GET", "POST"],
@@ -66,10 +144,6 @@ async function startServer() {
   if (fs.existsSync(distPath)) {
     app.use(express.static(distPath));
   }
-
-  // Memory store for parties
-  // In a real app, this would be Redis
-  const parties = new Map<string, any>();
 
   // Multer setup for music uploads
   const storage = multer.diskStorage({
@@ -97,7 +171,7 @@ async function startServer() {
   });
 
   // API Routes
-  app.post("/api/session/create", (req, res) => {
+  app.post("/api/session/create", async (req, res) => {
     const code = nanoid(6).toUpperCase();
     const party = {
       code,
@@ -108,19 +182,18 @@ async function startServer() {
       playbackState: {
         playing: false,
         position: 0,
-        lastUpdated: Date.now()
+        timestamp: Date.now()
       }
     };
-    parties.set(code, party);
+    await setParty(code, party);
     res.json({ code });
   });
 
-  app.get("/api/session/:code", (req, res) => {
-    const party = parties.get(req.params.code);
+  app.get("/api/session/:code", async (req, res) => {
+    const party = await getParty(req.params.code);
     if (!party) return res.status(404).json({ error: "Session not found" });
     res.json(party);
   });
-
 
   // Helper: Parse Spotify URL and extract track ID
   function parseSpotifyUrl(url: string): string | null {
@@ -216,7 +289,6 @@ async function startServer() {
     }
   });
 
-  // Handle Spotify and other platform URLs by converting to YouTube
   app.get("/api/music/resolve-url", async (req, res) => {
     const url = req.query.url as string;
     if (!url) return res.status(400).json({ error: "URL is required" });
@@ -237,20 +309,16 @@ async function startServer() {
         const scUrl = parseSoundCloudUrl(url);
         if (!scUrl) return res.status(400).json({ error: "Invalid SoundCloud URL" });
         
-        // Extract artist and track from URL
         const parts = scUrl.split("/");
         const artist = parts[parts.length - 2];
         const track = parts[parts.length - 1];
         searchQuery = `${track} ${artist}`.replace(/-/g, " ");
       } else if (platform === "youtube") {
-        // Already YouTube, just search directly
         searchQuery = url;
       } else {
-        // Treat as generic search query
         searchQuery = url;
       }
 
-      // Search on YouTube for the track
       const apiKey = process.env.YOUTUBE_API_KEY;
       if (!apiKey) {
         return res.status(500).json({ error: "YouTube API key not configured" });
@@ -315,7 +383,6 @@ async function startServer() {
   io.on("connection", (socket) => {
     console.log("Client connected:", socket.id);
 
-    // Clock sync (NTP-like)
     socket.on("clock:ping", (t1) => {
       socket.emit("clock:pong", {
         t1,
@@ -324,7 +391,12 @@ async function startServer() {
       });
     });
 
-    socket.on("party:create", ({ host_id, host_name }, callback) => {
+    socket.on("presence:heartbeat", async () => {
+      // Set presence in Redis with 30s TTL
+      await redis.set(`syncwave:presence:${socket.id}`, "active", "EX", 30);
+    });
+
+    socket.on("party:create", async ({ host_id, host_name }, callback) => {
       const code = nanoid(6).toUpperCase();
       const party = {
         code,
@@ -332,23 +404,26 @@ async function startServer() {
         hostName: host_name,
         listeners: [{ id: socket.id, userId: host_id, name: host_name, device_info: "Host", isMuted: false }],
         queue: [],
+        history: [],
+        chatMessages: [],
+        visualizerMode: "particles",
         currentTrack: null,
         playbackState: {
           playing: false,
-          position: 0,
-          timestamp: Date.now()
+          startedAtServerTime: Date.now(),
+          pausedPosition: 0,
+          playbackRate: 1
         },
         bannedIds: [],
         ambientVibe: null
       };
-      parties.set(code, party);
+      await setParty(code, party);
       socket.join(code);
       callback(code);
       io.to(code).emit("party:update", party);
     });
 
-    socket.on("party:join", ({ code, listener_id, listener_name }, callback) => {
-      // Guard: callback must be a function (client might not send one)
+    socket.on("party:join", async ({ code, listener_id, listener_name }, callback) => {
       if (typeof callback !== "function") return;
       if (!code || typeof code !== "string") {
         callback({ success: false, error: "Invalid session code." });
@@ -356,7 +431,7 @@ async function startServer() {
       }
 
       const upperCode = code.trim().toUpperCase();
-      const party = parties.get(upperCode);
+      const party = await getParty(upperCode);
       if (!party) {
         callback({ success: false, error: `Session "${upperCode}" not found. The host may have ended the session.` });
         return;
@@ -376,120 +451,140 @@ async function startServer() {
       const newListener = { id: socket.id, userId: listener_id, name: displayName, device_info: "Listener", isMuted: false };
       party.listeners.push(newListener);
 
+      await setParty(upperCode, party);
       callback({ success: true });
       io.to(upperCode).emit("party:update", party);
     });
 
-    socket.on("party:leave", ({ code }) => {
-      const party = parties.get(code);
+    socket.on("party:leave", async ({ code }) => {
+      const party = await getParty(code);
       if (party) {
         party.listeners = party.listeners.filter((l: any) => l.id !== socket.id);
         socket.leave(code);
         if (party.listeners.length === 0) {
-          parties.delete(code);
+          await deleteParty(code);
         } else {
           if (party.hostId === socket.id) {
             party.hostId = party.listeners[0].id;
             party.hostName = party.listeners[0].name;
           }
+          await setParty(code, party);
           io.to(code).emit("party:update", party);
         }
       }
     });
 
-    socket.on("party:kick", ({ code, listener_id }) => {
-      const party = parties.get(code);
+    socket.on("party:kick", async ({ code, listener_id }) => {
+      const party = await getParty(code);
       if (party && party.hostId === socket.id && listener_id !== socket.id) {
         party.listeners = party.listeners.filter((l: any) => l.id !== listener_id);
+        await setParty(code, party);
         io.to(listener_id).emit("party:kicked");
         io.to(code).emit("party:update", party);
       }
     });
 
-    socket.on("party:mute", ({ code, listener_id, muted }) => {
-      const party = parties.get(code);
+    socket.on("party:mute", async ({ code, listener_id, muted }) => {
+      const party = await getParty(code);
       if (party && party.hostId === socket.id) {
         const listener = party.listeners.find((l: any) => l.id === listener_id);
         if (listener) {
           listener.isMuted = muted;
+          await setParty(code, party);
           io.to(code).emit("party:update", party);
         }
       }
     });
 
-    socket.on("party:ban", ({ code, listener_id }) => {
-      const party = parties.get(code);
+    socket.on("party:ban", async ({ code, listener_id }) => {
+      const party = await getParty(code);
       if (party && party.hostId === socket.id && listener_id !== socket.id) {
         const targetListener = party.listeners.find((l: any) => l.id === listener_id);
         if (targetListener) {
           party.bannedIds.push(targetListener.userId);
         }
         party.listeners = party.listeners.filter((l: any) => l.id !== listener_id);
+        await setParty(code, party);
         io.to(listener_id).emit("party:banned");
         io.to(code).emit("party:update", party);
       }
     });
 
-    socket.on("party:update-vibe", ({ code, vibe }) => {
-      const party = parties.get(code);
+    socket.on("party:update-vibe", async ({ code, vibe }) => {
+      const party = await getParty(code);
       if (party && (party.hostId === socket.id)) {
         party.ambientVibe = vibe;
+        await setParty(code, party);
         io.to(code).emit("party:update", party);
       }
     });
 
-    socket.on("sync:play", ({ code, track_id, position_ms }) => {
-      const party = parties.get(code);
+    socket.on("sync:play", async ({ code, track_id, position_ms }) => {
+      const party = await getParty(code);
       if (party && party.hostId === socket.id) {
-        // Find track in queue or current
-        let track = party.currentTrack?.id === track_id ? party.currentTrack : party.queue.find(t => t.id === track_id);
+        let track = party.currentTrack?.id === track_id ? party.currentTrack : party.queue.find((t: any) => t.id === track_id);
         
         if (track) {
-          // Play track but KEEP it in queue for replay (don't remove from queue)
+          // If the track is changing, push the old one to history
+          if (party.currentTrack && party.currentTrack.id !== track.id) {
+            party.history = party.history || [];
+            party.history.push(party.currentTrack);
+          }
+
           party.currentTrack = track;
-          
-          const scheduledDelay = 1500; // 1.5s delay for buffering and hardware prep
+          const scheduledDelay = 1500;
+          const targetTime = Date.now() + scheduledDelay;
           party.playbackState = {
             playing: true,
-            position: position_ms,
-            timestamp: Date.now() + scheduledDelay,
-            scheduledStartTime: Date.now() + scheduledDelay
+            startedAtServerTime: targetTime - position_ms,
+            pausedPosition: 0,
+            playbackRate: 1
           };
+          await setParty(code, party);
           io.to(code).emit("party:update", party);
         }
       }
     });
 
-    socket.on("sync:pause", ({ code }) => {
-      const party = parties.get(code);
+    socket.on("sync:pause", async ({ code }) => {
+      const party = await getParty(code);
       if (party && party.hostId === socket.id) {
         const now = Date.now();
-        const elapsed = party.playbackState.playing ? Math.max(0, now - party.playbackState.timestamp) : 0;
+        let pausedPos = party.playbackState.pausedPosition || 0;
+        if (party.playbackState.playing) {
+          pausedPos = now - party.playbackState.startedAtServerTime;
+        }
         party.playbackState = {
           playing: false,
-          position: party.playbackState.position + elapsed,
-          timestamp: now,
-          scheduledStartTime: null
+          startedAtServerTime: party.playbackState.startedAtServerTime,
+          pausedPosition: pausedPos,
+          playbackRate: 1
         };
+        await setParty(code, party);
         io.to(code).emit("party:update", party);
       }
     });
 
-    socket.on("sync:seek", ({ code, position_ms }) => {
-      const party = parties.get(code);
+    socket.on("sync:seek", async ({ code, position_ms }) => {
+      const party = await getParty(code);
       if (party && party.hostId === socket.id) {
         const scheduledDelay = 500; // Shorter delay for seeks
-        party.playbackState.position = position_ms;
-        party.playbackState.timestamp = Date.now() + scheduledDelay;
-        party.playbackState.scheduledStartTime = Date.now() + scheduledDelay;
+        const targetTime = Date.now() + scheduledDelay;
+        if (party.playbackState.playing) {
+          party.playbackState.startedAtServerTime = targetTime - position_ms;
+        } else {
+          party.playbackState.pausedPosition = position_ms;
+        }
+        await setParty(code, party);
         io.to(code).emit("party:update", party);
       }
     });
 
-    socket.on("queue:update", ({ code, queue }) => {
-      const party = parties.get(code);
+    socket.on("queue:update", async ({ code, queue }) => {
+      const party = await getParty(code);
       if (party && party.hostId === socket.id) {
         party.queue = queue;
+        await setParty(code, party);
         io.to(code).emit("party:update", party);
       }
     });
@@ -498,23 +593,55 @@ async function startServer() {
       io.to(code).emit("sync:reaction", { type });
     });
 
-    socket.on("disconnect", () => {
-      console.log("Client disconnected:", socket.id);
-      for (const [code, party] of parties.entries()) {
-        const index = party.listeners.findIndex((l: any) => l.id === socket.id);
-        if (index !== -1) {
-          party.listeners.splice(index, 1);
-          if (party.listeners.length === 0) {
-            parties.delete(code);
-          } else {
-            if (party.hostId === socket.id) {
-              party.hostId = party.listeners[0].id;
-              party.hostName = party.listeners[0].name;
+    socket.on("chat:send", async ({ code, message }) => {
+      const party = await getParty(code);
+      if (party) {
+        party.chatMessages = party.chatMessages || [];
+        party.chatMessages.push(message);
+        if (party.chatMessages.length > 50) {
+          party.chatMessages.shift(); // keep last 50 messages
+        }
+        await setParty(code, party);
+        io.to(code).emit("chat:receive", message);
+      }
+    });
+
+    socket.on("party:update-visualizer", async ({ code, mode }) => {
+      const party = await getParty(code);
+      if (party && party.hostId === socket.id) {
+        party.visualizerMode = mode;
+        await setParty(code, party);
+        io.to(code).emit("party:update", party);
+      }
+    });
+
+    socket.on("disconnecting", async () => {
+      for (const room of socket.rooms) {
+        if (room !== socket.id) {
+          const party = await getParty(room);
+          if (party) {
+            const index = party.listeners.findIndex((l: any) => l.id === socket.id);
+            if (index !== -1) {
+              party.listeners.splice(index, 1);
+              if (party.listeners.length === 0) {
+                await deleteParty(room);
+              } else {
+                if (party.hostId === socket.id) {
+                  party.hostId = party.listeners[0].id;
+                  party.hostName = party.listeners[0].name;
+                }
+                await setParty(room, party);
+                io.to(room).emit("party:update", party);
+              }
             }
-            io.to(code).emit("party:update", party);
           }
         }
       }
+    });
+
+    socket.on("disconnect", async () => {
+      console.log("Client disconnected:", socket.id);
+      await redis.del(`syncwave:presence:${socket.id}`);
     });
   });
 

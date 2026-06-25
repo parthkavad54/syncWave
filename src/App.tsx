@@ -7,7 +7,8 @@ import {
   Upload, QrCode as QrCodeIcon, Headphones,
   Zap, GripVertical,
   Mic, MicOff, UserMinus, Ban,
-  Search, Loader2, Trash2, Signal
+  Search, Loader2, Trash2, Signal,
+  VolumeX, Volume1, Volume2
 } from "lucide-react";
 import {
   DndContext,
@@ -37,6 +38,8 @@ import { QRCodeSVG } from "qrcode.react";
 import { GoogleGenAI, Type } from "@google/genai";
 import { nanoid } from "nanoid";
 import YouTube from "react-youtube";
+import ChatBox from "./components/ChatBox";
+import { Sun, Moon, Download } from "lucide-react";
 
 // Ambient Atmosphere removed
 
@@ -361,11 +364,10 @@ const PlaybackProgress = ({
 
 const getPlaybackSeconds = (playback: PlaybackState, isPaused: boolean) => {
   if (!playback.playing || isPaused) {
-    return playback.position / 1000;
+    return (playback.pausedPosition || 0) / 1000;
   }
 
-  const elapsed = Math.max(0, syncEngine.getCorrectedTime() - playback.timestamp);
-  return (playback.position + elapsed) / 1000;
+  return (syncEngine.getCorrectedTime() - playback.startedAtServerTime) / 1000;
 };
 
 const NamePrompt = ({ onComplete }: { onComplete: (name: string) => void }) => {
@@ -407,20 +409,51 @@ const NamePrompt = ({ onComplete }: { onComplete: (name: string) => void }) => {
 const ReactionOverlay = ({ reactions }: { reactions: { id: string; type: string }[] }) => (
   <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
     <AnimatePresence>
-      {reactions.map((r) => (
-        <motion.div
-           key={r.id}
-           initial={{ y: "100%", x: `${Math.random() * 80 + 10}%`, scale: 0, opacity: 0 }}
-           animate={{ y: "-20%", scale: 1, opacity: 1 }}
-           exit={{ opacity: 0 }}
-           transition={{ duration: 2, ease: "circOut" }}
-           className="absolute text-5xl"
-         >
-           {r.type === 'fire' ? 'ðŸ”¥' : r.type === 'heart' ? 'â¤ï¸' : 'ðŸŽµ'}
-         </motion.div>
-      ))}
+      {reactions.map((r) => {
+        if (r.type === 'heart') {
+          return (
+            <motion.div
+              key={r.id}
+              initial={{ scale: 0, opacity: 0, top: "50%", left: "50%", x: "-50%", y: "-50%" }}
+              animate={{ scale: [0, 3, 5], opacity: [0, 1, 0] }}
+              transition={{ duration: 1.5, ease: "easeOut" }}
+              className="absolute text-9xl drop-shadow-[0_0_80px_rgba(236,72,153,0.8)]"
+            >
+              ❤️
+            </motion.div>
+          );
+        }
+        return (
+          <motion.div
+             key={r.id}
+             initial={{ y: "100vh", x: `${Math.random() * 80 + 10}vw`, scale: 0, opacity: 0 }}
+             animate={{ y: "-20vh", scale: 1, opacity: 1 }}
+             exit={{ opacity: 0 }}
+             transition={{ duration: 2, ease: "circOut" }}
+             className="absolute text-5xl"
+           >
+             {r.type === 'fire' ? '🔥' : '🎵'}
+           </motion.div>
+        );
+      })}
     </AnimatePresence>
   </div>
+);
+
+const VolumeOverlay = ({ volume, visible }: { volume: number, visible: boolean }) => (
+  <AnimatePresence>
+    {visible && (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.8, y: -20 }}
+        className="fixed bottom-12 left-1/2 -translate-x-1/2 z-[100] glass px-6 py-4 rounded-3xl flex items-center gap-4 text-white font-bold pointer-events-none shadow-2xl"
+      >
+        {volume === 0 ? <VolumeX size={28} /> : volume < 0.5 ? <Volume1 size={28} /> : <Volume2 size={28} />}
+        <div className="text-xl w-12 text-center">{Math.round(volume * 100)}%</div>
+      </motion.div>
+    )}
+  </AnimatePresence>
 );
 
 const Landing = ({ 
@@ -696,7 +729,7 @@ const JoinView = ({ onBack, onJoin }: { onBack: () => void, onJoin: (code: strin
   );
 };
 
-const SortableTrackItem = ({ 
+const SortableTrackItem = React.memo(({ 
   track, 
   isCurrent,
   onPlayTrack, 
@@ -762,7 +795,112 @@ const SortableTrackItem = ({
       </div>
     </div>
   );
-};
+}, (prev, next) => {
+  return prev.track.id === next.track.id &&
+         prev.track.name === next.track.name &&
+         prev.isCurrent === next.isCurrent;
+});
+
+const HostNowPlaying = React.memo(({
+  party,
+  userName,
+  duration,
+  currentTime,
+  onTogglePlayback,
+  onSeek,
+  onSkipForward,
+  onSkipBackward
+}: any) => (
+  <div className="glass-card h-full flex flex-col items-center justify-center text-center">
+    <div className="mb-4">
+       <span className="px-3 py-1 bg-party-violet/20 text-party-violet rounded-full text-xs font-bold font-mono">HOST: {userName}</span>
+    </div>
+    <div className="relative mb-8 group">
+      <div className="absolute -inset-4 bg-gradient-to-r from-party-violet to-party-cyan rounded-full opacity-20 blur-2xl group-hover:opacity-40 transition-opacity"></div>
+      <div className="w-64 h-64 rounded-3xl bg-white/5 overflow-hidden border border-white/10 relative z-10">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={party?.currentTrack?.id || "empty"}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.1 }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+            className="w-full h-full"
+          >
+            {party?.currentTrack?.coverArt ? (
+              <img src={party.currentTrack.coverArt} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-white/10 to-transparent">
+                <Music size={80} className="text-white/20" />
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+      <ReactiveRings playing={party?.playbackState.playing || false} />
+    </div>
+
+    <motion.div
+      key={party?.currentTrack?.id || "empty-text"}
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      className="w-full text-center cursor-pointer"
+      onClick={onTogglePlayback}
+    >
+      <h2 className="text-3xl font-display font-bold mb-1 truncate w-full">{party?.currentTrack?.name || "Ready to Rock"}</h2>
+      <p className="text-white/40 mb-8">{party?.currentTrack?.artist || "Upload music to begin"}</p>
+    </motion.div>
+
+    <div className="flex items-center gap-8 mb-8">
+      <motion.button 
+        whileTap={{ scale: 0.9 }} 
+        onClick={onSkipBackward}
+        className="text-white/60 hover:text-white"
+      >
+        <SkipBack size={32} />
+      </motion.button>
+      <motion.button 
+        whileTap={{ scale: 0.9 }}
+        onClick={onTogglePlayback}
+        className="w-20 h-20 rounded-full bg-white text-party-black flex items-center justify-center shadow-[0_0_30px_rgba(255,255,255,0.3)]"
+      >
+        {party?.playbackState.playing ? <Pause size={36} fill="currentColor" /> : <Play size={36} fill="currentColor" className="ml-1" />}
+      </motion.button>
+      <motion.button 
+        whileTap={{ scale: 0.9 }} 
+        onClick={onSkipForward}
+        className="text-white/60 hover:text-white"
+      >
+        <SkipForward size={32} />
+      </motion.button>
+    </div>
+
+    <div className="w-full relative mb-2 flex items-center px-4">
+      <input 
+        type="range"
+        min={0}
+        max={duration || 1}
+        value={currentTime}
+        onChange={onSeek}
+        className="w-full h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer accent-party-violet"
+      />
+      <div className="absolute top-0 left-4 right-4 h-1.5 bg-white/10 rounded-full pointer-events-none overflow-hidden">
+        <div 
+          className="h-full bg-gradient-to-r from-party-violet to-party-cyan rounded-full transition-[width] duration-300 ease-linear"
+          style={{ width: `${getProgressPercent(currentTime, duration)}%` }}
+        />
+      </div>
+    </div>
+    <div className="px-4 w-full text-[10px] uppercase tracking-[0.2em] text-white/40 font-mono">
+      <span>{formatTime(currentTime)} / {formatTime(duration)}</span>
+    </div>
+  </div>
+), (prev, next) => {
+  return prev.currentTime === next.currentTime &&
+         prev.duration === next.duration &&
+         prev.party?.currentTrack?.id === next.party?.currentTrack?.id &&
+         prev.party?.playbackState.playing === next.party?.playbackState.playing;
+});
 
 const HostDashboard = ({ 
   party, 
@@ -784,7 +922,8 @@ const HostDashboard = ({
   onPlayTrack,
   onSkipForward,
   onSkipBackward,
-  onShowToast
+  onShowToast,
+  onDownloadHistory
 }: { 
   party: Party | null, 
   userName: string, 
@@ -805,7 +944,8 @@ const HostDashboard = ({
   onPlayTrack: (track: Track) => void,
   onSkipForward: () => void,
   onSkipBackward: () => void,
-  onShowToast: (msg: string) => void
+  onShowToast: (msg: string) => void,
+  onDownloadHistory?: () => void
 }) => (
   <div className="min-h-screen grid lg:grid-cols-12 gap-6 p-6">
     <button onClick={onLeaveParty} className="absolute top-8 left-8 text-white/40 hover:text-white flex items-center gap-2 px-4 py-2 glass rounded-full z-10 transition-all hover:pl-2">
@@ -1128,6 +1268,32 @@ const HostDashboard = ({
             ))}
          </div>
       </div>
+
+      <div className="glass-card">
+        <div className="flex items-center justify-between mb-3">
+          <span className="font-semibold text-sm opacity-80">Visualizer Mode</span>
+        </div>
+        <div className="flex gap-2">
+          {['particles', 'bars', 'rings'].map(m => (
+            <button 
+              key={m}
+              onClick={() => syncEngine.socket.emit("party:update-visualizer", { code: party?.code, mode: m })}
+              className={`flex-1 py-2 text-xs font-bold rounded-lg uppercase tracking-wider transition-colors border ${party?.visualizerMode === m ? 'bg-party-cyan text-black border-party-cyan' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}
+            >
+              {m}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {onDownloadHistory && (
+        <button 
+          onClick={onDownloadHistory}
+          className="w-full py-3 rounded-2xl bg-white/5 hover:bg-white/10 flex items-center justify-center gap-2 transition-colors border border-white/10 font-bold"
+        >
+          <Download size={18} /> Download History
+        </button>
+      )}
 
       <button 
         onClick={onLeaveParty}
@@ -1674,6 +1840,41 @@ export default function App() {
   const [myLibrary, setMyLibrary] = useState<Track[]>([]);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(1);
+  const [volumeVisible, setVolumeVisible] = useState(false);
+  const volumeTimeoutRef = useRef<any>(null);
+
+  // Theme Toggle
+  const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
+
+  useEffect(() => {
+    if (theme === "light") {
+      document.documentElement.classList.add("light-mode");
+    } else {
+      document.documentElement.classList.remove("light-mode");
+    }
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  // Initialize visualizer worker
+  useEffect(() => {
+    const worker = new Worker(new URL('./lib/visualizerWorker.ts', import.meta.url), { type: 'module' });
+    worker.onmessage = (e) => {
+      if (e.data.type === "VISUALIZER_DATA") {
+        (window as any).__visualizerData = e.data.payload;
+      }
+    };
+
+    const interval = setInterval(() => {
+      const data = audioEngine.getFrequencyData();
+      worker.postMessage({ type: "PROCESS_FFT", data });
+    }, 1000 / 30); // 30 FPS updates for the visualizer is smooth enough
+
+    return () => {
+      clearInterval(interval);
+      worker.terminate();
+    };
+  }, []);
   const [reactions, setReactions] = useState<{ id: string; type: string }[]>([]);
   const [userName, setUserName] = useState(localStorage.getItem("syncwave_user") || "");
   const [userId] = useState(() => {
@@ -1722,6 +1923,46 @@ export default function App() {
 
   const onShowProfile = () => {
     alert("Profile features are disabled in session-only mode.");
+  };
+
+  const handleSendMessage = (text: string) => {
+    if (party) {
+      syncEngine.socket.emit("chat:send", {
+        code: party.code,
+        message: {
+          id: nanoid(),
+          userId,
+          name: isHost ? (party.hostName || "Host") : (party.listeners.find(l => l.userId === userId)?.name || "Listener"),
+          text,
+          timestamp: Date.now()
+        }
+      });
+    }
+  };
+
+  const downloadHistory = () => {
+    if (!party) return;
+    const history = party.history || [];
+    let content = `VibeSync AI Session History - ${party.code}\nDate: ${new Date().toLocaleString()}\n\n`;
+    
+    if (history.length === 0 && !party.currentTrack) {
+      content += "No tracks played yet.";
+    } else {
+      history.forEach((track, i) => {
+        content += `${i + 1}. ${track.name} by ${track.artist}\n   URL: ${track.url}\n\n`;
+      });
+      if (party.currentTrack) {
+        content += `${history.length + 1}. ${party.currentTrack.name} by ${party.currentTrack.artist} (Current)\n   URL: ${party.currentTrack.url}\n\n`;
+      }
+    }
+
+    const blob = new Blob([content], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `VibeSync_History_${party.code}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const onLogout = async () => {
@@ -1775,9 +2016,15 @@ export default function App() {
       setParty(null);
       setView("landing");
     });
+    const handleChat = (message: any) => {
+      setParty(p => p ? { ...p, chatMessages: [...(p.chatMessages || []), message] } : null);
+    };
+    syncEngine.socket.on("chat:receive", handleChat);
+    
     return () => {
       syncEngine.socket.off("party:kicked");
       syncEngine.socket.off("party:banned");
+      syncEngine.socket.off("chat:receive", handleChat);
     };
   }, []);
 
@@ -1912,6 +2159,16 @@ export default function App() {
     return () => clearInterval(interval);
   }, []);
 
+  // ── Network Heartbeats (Every 15s) ─────────
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (syncEngine.socket.connected) {
+        syncEngine.socket.emit("presence:heartbeat");
+      }
+    }, 15000);
+    return () => clearInterval(interval);
+  }, []);
+
   // â”€â”€ Always-on reaction listener (works for both host AND listener) â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     const socket = syncEngine.socket;
@@ -1940,12 +2197,20 @@ export default function App() {
         if (party.currentTrack.type === 'youtube' && ytPlayerRef.current) {
           const serverPos = (playback.position + (syncEngine.getCorrectedTime() - playback.timestamp)) / 1000;
           const currentYTTime = ytPlayerRef.current.getCurrentTime();
-          if (Math.abs(currentYTTime - serverPos) > 2.0) {
+          const driftMs = (serverPos - currentYTTime) * 1000;
+          const absDrift = Math.abs(driftMs);
+          if (absDrift > 150) {
             ytPlayerRef.current.seekTo(serverPos, true);
+            ytPlayerRef.current.setPlaybackRate(1.0);
+          } else if (absDrift > 20) {
+            ytPlayerRef.current.setPlaybackRate(driftMs > 0 ? 1.05 : 0.95);
+          } else {
+            ytPlayerRef.current.setPlaybackRate(1.0);
           }
         } else {
+          // Check standard direct link playback drift
           const localPos = audioEngine.getPosition() * 1000;
-          const serverPos = playback.position + (syncEngine.getCorrectedTime() - playback.timestamp);
+          const serverPos = syncEngine.getCorrectedTime() - playback.startedAtServerTime;
           const drift = Math.abs(localPos - serverPos);
           audioEngine.syncTo(serverPos / 1000, drift);
         }
@@ -1995,7 +2260,7 @@ export default function App() {
           audioEngine.stop();
           
           if (ytPlayerRef.current) {
-            const serverPos = (playback.position + (playback.playing ? (syncEngine.getCorrectedTime() - playback.timestamp) : 0)) / 1000;
+            const serverPos = (playback.playing ? (syncEngine.getCorrectedTime() - playback.startedAtServerTime) : (playback.pausedPosition || 0)) / 1000;
             const currentYTTime = ytPlayerRef.current.getCurrentTime();
             
             if (Math.abs(currentYTTime - serverPos) > 1.0 && playback.playing && !isLocalPaused) {
@@ -2017,8 +2282,8 @@ export default function App() {
           if (audioEngine.trackId !== currentTrack.id) {
             // New track â€” load, seek to exact server position, play
             const expectedStart = syncEngine.getExpectedPosition(
-              playback.position,
-              playback.scheduledStartTime ?? playback.timestamp,
+              playback.startedAtServerTime,
+              playback.pausedPosition,
               playback.playing
             );
 
@@ -2033,7 +2298,7 @@ export default function App() {
           if (playback.playing && !isLocalPaused) {
             // Start continuous 500ms drift correction loop
             audioEngine.startSyncLoop(() =>
-              syncEngine.getExpectedPosition(playback.position, playback.timestamp, true)
+              syncEngine.getExpectedPosition(playback.startedAtServerTime, playback.pausedPosition, true)
             );
             audioEngine.resume();
           } else {
@@ -2159,6 +2424,30 @@ export default function App() {
         if (isHost) {
           skipForward();
         }
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setVolume((v) => {
+          const newVol = Math.min(1, v + 0.1);
+          audioEngine.setVolume(newVol);
+          if (ytPlayerRef.current) ytPlayerRef.current.setVolume(newVol * 100);
+          
+          setVolumeVisible(true);
+          if (volumeTimeoutRef.current) clearTimeout(volumeTimeoutRef.current);
+          volumeTimeoutRef.current = setTimeout(() => setVolumeVisible(false), 2000);
+          return newVol;
+        });
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setVolume((v) => {
+          const newVol = Math.max(0, v - 0.1);
+          audioEngine.setVolume(newVol);
+          if (ytPlayerRef.current) ytPlayerRef.current.setVolume(newVol * 100);
+          
+          setVolumeVisible(true);
+          if (volumeTimeoutRef.current) clearTimeout(volumeTimeoutRef.current);
+          volumeTimeoutRef.current = setTimeout(() => setVolumeVisible(false), 2000);
+          return newVol;
+        });
       }
     };
 
@@ -2261,12 +2550,12 @@ export default function App() {
 
   return (
     <div className="relative min-h-screen">
-      <ThreeBackground />
+      <ThreeBackground mode={party?.visualizerMode || "particles"} />
       {party?.currentTrack?.type === 'youtube' && (
         <YouTubePlayer 
           videoId={party.currentTrack.url}
           playing={party.playbackState.playing && !isLocalPaused}
-          position={party.playbackState.position / 1000}
+          position={getPlaybackSeconds(party.playbackState, isLocalPaused)}
           onReady={(p) => {
             ytPlayerRef.current = p;
           }}
@@ -2302,10 +2591,19 @@ export default function App() {
 
       <ReactionOverlay reactions={reactions} />
       
+      <div className="fixed top-6 right-6 z-[150] flex items-center gap-3">
+        {party && <SyncStats />}
+        <button 
+          onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
+          className="w-10 h-10 rounded-full glass flex items-center justify-center hover:scale-110 transition-transform shadow-lg"
+          title="Toggle Light/Dark Mode"
+        >
+          {theme === 'dark' ? <Sun size={18} className="text-yellow-400" /> : <Moon size={18} className="text-slate-700" />}
+        </button>
+      </div>
+
       {party && (
-        <div className="fixed top-8 right-8 z-[150]">
-          <SyncStats />
-        </div>
+        <ChatBox messages={party.chatMessages || []} onSendMessage={handleSendMessage} currentUserId={userId} />
       )}
 
       <AnimatePresence mode="wait">
@@ -2346,6 +2644,7 @@ export default function App() {
               onPlayTrack={playTrackNow}
               onSkipForward={skipForward}
               onSkipBackward={skipBackward}
+              onDownloadHistory={downloadHistory}
             />
           )}
           {view === "listener" && (
